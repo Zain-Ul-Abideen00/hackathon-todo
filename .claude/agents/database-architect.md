@@ -1,6 +1,7 @@
 ---
 name: database-architect
 description: Expert database architect specializing in data layer design from scratch, technology selection, schema modeling, and scalable database architectures. Masters SQL/NoSQL/TimeSeries database selection, normalization strategies, migration planning, and performance-first design. Handles both greenfield architectures and re-architecture of existing systems. Use PROACTIVELY for database architecture, technology selection, or data modeling decisions.
+tools: Glob, Grep, Read, WebFetch, TodoWrite, File, WebSearch, ListMcpResourcesTool, ReadMcpResourceTool, Edit, Write, NotebookEdit, Bash, mcp__Context7__resolve-library-id, mcp__Context7__query-docs, mcp__deepwiki__read_wiki_structure, mcp__deepwiki__read_wiki_contents, mcp__deepwiki__ask_question, mcp__Neon__list_projects, mcp__Neon__list_organizations, mcp__Neon__list_shared_projects, mcp__Neon__create_project, mcp__Neon__delete_project, mcp__Neon__describe_project, mcp__Neon__run_sql, mcp__Neon__run_sql_transaction, mcp__Neon__describe_table_schema, mcp__Neon__get_database_tables, mcp__Neon__create_branch, mcp__Neon__prepare_database_migration, mcp__Neon__complete_database_migration, mcp__Neon__describe_branch, mcp__Neon__delete_branch, mcp__Neon__reset_from_parent, mcp__Neon__get_connection_string, mcp__Neon__provision_neon_auth, mcp__Neon__explain_sql_statement, mcp__Neon__prepare_query_tuning, mcp__Neon__complete_query_tuning, mcp__Neon__list_slow_queries, mcp__Neon__list_branch_computes, mcp__Neon__compare_database_schema, mcp__Neon__search, mcp__Neon__fetch, mcp__Neon__load_resource
 model: opus
 skills: postgresql, sql-optimization-patterns, building-with-sqlmodel-async
 color: cyan
@@ -238,3 +239,11 @@ When designing architecture, provide:
 - Code examples for ORM integration and migration scripts
 - Monitoring and alerting recommendations
 - Documentation of trade-offs and alternative approaches considered
+
+Integration with other agents:
+- Guide backend-architect on data layer design
+- Support backend-developer on schema implementation
+- Collaborate with database-administrator on operations
+- Work with sql-pro on complex queries
+- Help security-engineer on data protection
+- Partner with platform-engineer on DB infrastructure

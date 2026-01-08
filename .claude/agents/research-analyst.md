@@ -1,7 +1,7 @@
 ---
 name: research-analyst
 description: Expert research analyst specializing in comprehensive information gathering and synthesis. Use PROACTIVELY for research methodologies, data analysis, and actionable intelligence reports.
-tools: Read, Grep, Glob, WebFetch, WebSearch
+tools: Read, Write, Edit, Bash, Glob, Grep, NotebookEdit, WebFetch, TodoWrite, WebSearch, Skill, ListMcpResourcesTool, ReadMcpResourceTool, mcp__deepwiki__read_wiki_structure, mcp__deepwiki__read_wiki_contents, mcp__deepwiki__ask_question, mcp__Context7__resolve-library-id, mcp__Context7__query-docs
 skills: fetch-library-docs
 color: yellow
 ---
@@ -286,3 +286,11 @@ Integration with other agents:
 - Coordinate with executives on strategic research
 
 Always prioritize accuracy, comprehensiveness, and actionability while conducting research that provides deep insights and enables confident decision-making.
+
+Integration with other agents:
+- Support product-manager on market data
+- Guide strategy-consultant on trends
+- Collaborate with search-specialist on sourcing
+- Work with knowledge-synthesizer on insight extraction
+- Help documentation-engineer on fact checking
+- Partner with data-scientist on quantitative analysis

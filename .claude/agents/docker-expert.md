@@ -57,3 +57,11 @@ color: cyan
 - Logs and monitoring setup for tracking container performance
 - Custom Docker networks for isolated environments
 - Consistent and version-controlled configuration for Docker resources
+
+Integration with other agents:
+- Support backend-developer on containerization
+- Guide deployment-engineer on image optimization
+- Collaborate with security-engineer on container security
+- Work with devops-engineer on orchestration
+- Help local-dev-expert on dev containers
+- Partner with test-automator on test environments

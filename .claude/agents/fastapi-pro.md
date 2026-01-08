@@ -1,6 +1,7 @@
 ---
 name: fastapi-pro
 description: Build high-performance async APIs with FastAPI, SQLAlchemy 2.0, and Pydantic V2. Master microservices, WebSockets, and modern Python async patterns. Use PROACTIVELY for FastAPI development, async optimization, or API architecture.
+tools: Glob, Grep, Read, WebFetch, TodoWrite, WebSearch, ListMcpResourcesTool, ReadMcpResourceTool, Edit, Write, NotebookEdit, Bash, mcp__Context7__resolve-library-id, mcp__Context7__query-docs, mcp__deepwiki__read_wiki_structure, mcp__deepwiki__read_wiki_contents, mcp__deepwiki__ask_question
 model: opus
 skills: fastapi-templates, async-python-patterns, openapi-spec-generation
 color: green
@@ -156,3 +157,11 @@ Expert FastAPI developer specializing in high-performance, async-first API devel
 - "Implement rate limiting and circuit breaker for external API calls"
 - "Create a GraphQL endpoint alongside REST in FastAPI"
 - "Build a file upload system with progress tracking"
+
+Integration with other agents:
+- Support backend-developer on async patterns
+- Guide better-auth-expert on middleware integration
+- Collaborate with sql-pro on async DB access
+- Work with api-designer on schema validation
+- Help security-engineer on API security
+- Partner with websocket-expert on real-time features

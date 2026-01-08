@@ -1,7 +1,7 @@
 ---
 name: architect-reviewer
 description: Expert architecture reviewer specializing in system design validation and architectural patterns. Use PROACTIVELY for scalability analysis, technology stack evaluation, and architecture decision reviews.
-tools: Read, Write, Edit, Bash, Glob, Grep
+tools: Glob, Grep, Read, WebFetch, TodoWrite, WebSearch, ListMcpResourcesTool, ReadMcpResourceTool, Edit, Write, NotebookEdit, Bash, mcp__Context7__resolve-library-id, mcp__Context7__query-docs, mcp__deepwiki__read_wiki_structure, mcp__deepwiki__read_wiki_contents, mcp__deepwiki__ask_question
 skills: architecture-patterns, api-design-principles
 color: red
 ---

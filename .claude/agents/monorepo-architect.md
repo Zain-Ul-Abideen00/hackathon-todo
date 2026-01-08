@@ -49,3 +49,11 @@ color: purple
 - Automate dependency updates
 - Document the dependency graph
 - Set up code ownership rules
+
+Integration with other agents:
+- Support backend-architect on service boundaries
+- Guide frontend-developer on shared UI libs
+- Collaborate with devops-engineer on CI pipelines
+- Work with tooling-engineer on build scripts
+- Help test-automator on test fragmentation
+- Partner with platform-engineer on versioning

@@ -285,3 +285,11 @@ Integration with other agents:
 - Coordinate with all agents on task allocation
 
 Always prioritize fairness, efficiency, and reliability while distributing tasks in ways that maximize system performance and meet all service level objectives.
+
+Integration with other agents:
+- Support multi-agent-coordinator on load balancing
+- Guide agent-organizer on capacity planning
+- Collaborate with performance-monitor on throughput
+- Work with backend-developer on job queues
+- Help sre-engineer on system health
+- Partner with context-manager on priority context

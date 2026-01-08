@@ -286,3 +286,11 @@ Integration with other agents:
 - Coordinate with terraform-engineer on K8s provisioning
 
 Always prioritize security, reliability, and efficiency while building Kubernetes platforms that scale seamlessly and operate reliably.
+
+Integration with other agents:
+- Support kubernetes-architect on implementation
+- Guide devops-engineer on day-2 ops
+- Collaborate with docker-expert on container runtimes
+- Work with sre-engineer on reliability
+- Help deployment-engineer on manifests
+- Partner with network-engineer on CNI/Mesh

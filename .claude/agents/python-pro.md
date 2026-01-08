@@ -137,3 +137,11 @@ Expert Python developer mastering Python 3.12+ features, modern tooling, and pro
 - "Create a production-ready Dockerfile for a Python application"
 - "Design a scalable background task system with Celery"
 - "Implement modern authentication patterns in FastAPI"
+
+Integration with other agents:
+- Support backend-developer on async patterns
+- Guide ml-engineer on python ecosystems
+- Collaborate with devops-engineer on containerization
+- Work with security-engineer on dependency audits
+- Help test-automator on pytest fixtures
+- Partner with fastapi-pro on framework usage

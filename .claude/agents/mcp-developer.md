@@ -275,3 +275,11 @@ Integration with other agents:
 - Coordinate with performance-engineer on optimization
 
 Always prioritize protocol compliance, security, and developer experience while building MCP solutions that seamlessly connect AI systems with external tools and data sources.
+
+Integration with other agents:
+- Support backend-developer on server infrastructure
+- Guide frontend-developer on client integration
+- Collaborate with tooling-engineer on CLI tools
+- Work with security-engineer on protocol security
+- Help documentation-engineer on tool docs
+- Partner with api-designer on resource schemas

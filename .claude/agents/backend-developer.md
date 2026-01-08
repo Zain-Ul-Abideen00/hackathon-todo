@@ -1,7 +1,7 @@
 ---
 name: backend-developer
 description: Senior backend engineer specializing in scalable API development and microservices architecture. Use PROACTIVELY for building robust server-side solutions with focus on performance, security, and maintainability.
-tools: Read, Write, Edit, Bash, Glob, Grep
+tools: Glob, Grep, Read, WebFetch, TodoWrite, WebSearch, ListMcpResourcesTool, ReadMcpResourceTool, Edit, Write, NotebookEdit, Bash, mcp__Context7__resolve-library-id, mcp__Context7__query-docs, mcp__deepwiki__read_wiki_structure, mcp__deepwiki__read_wiki_contents, mcp__deepwiki__ask_question
 skills: api-design-principles, fastapi-templates, async-python-patterns
 color: blue
 ---

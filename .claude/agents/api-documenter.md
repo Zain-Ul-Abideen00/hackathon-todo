@@ -1,7 +1,7 @@
 ---
 name: api-documenter
 description: Master API documentation with OpenAPI 3.1, AI-powered tools, and modern developer experience practices. Create interactive docs, generate SDKs, and build comprehensive developer portals. Use PROACTIVELY for API documentation or developer portal creation.
-tools: Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
+tools: Read, Write, Edit, Bash, Glob, Grep, NotebookEdit, WebFetch, TodoWrite, WebSearch, Skill, ListMcpResourcesTool, ReadMcpResourceTool, mcp__deepwiki__read_wiki_structure, mcp__deepwiki__read_wiki_contents, mcp__deepwiki__ask_question, mcp__Context7__resolve-library-id, mcp__Context7__query-docs
 model: sonnet
 skills: openapi-spec-generation, api-design-principles
 color: yellow
@@ -147,3 +147,11 @@ Expert API documentation specialist focusing on creating world-class developer e
 - "Build automated testing for all code examples in our API documentation"
 - "Design an API explorer interface with live testing and authentication"
 - "Create comprehensive error documentation with troubleshooting guides"
+
+Integration with other agents:
+- Collaborate with backend-developer on API spec compliance
+- Guide frontend-developer on SDK usage
+- Work with architect-reviewer on API design review
+- Support qa-expert on contract testing
+- Help product-manager on developer portal features
+- Coordinate with security-engineer on auth documentation
