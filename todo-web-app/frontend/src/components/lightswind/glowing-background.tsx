@@ -2,37 +2,37 @@
 import { useEffect } from "react";
 
 interface GlowingBackgroundProps {
-  zIndex?: number;
-  height?: string;
-  ringColors?: string[];
-  blurStrength?: string;
-  gradientFrom?: string;
-  gradientVia?: string;
-  gradientTo?: string;
+	zIndex?: number;
+	height?: string;
+	ringColors?: string[];
+	blurStrength?: string;
+	gradientFrom?: string;
+	gradientVia?: string;
+	gradientTo?: string;
 }
 
 const GlowingBackground: React.FC<GlowingBackgroundProps> = ({
-  zIndex = -1,
-  height = "100vh",
-  ringColors = ["#4c1d95", "#a78bfa", "#c084fc"],
-  blurStrength = "blur-3xl",
-  gradientFrom = "#2e026d",
-  gradientVia = "#0f0c29",
-  gradientTo = "#0b011b",
+	zIndex = -1,
+	height = "100vh",
+	ringColors = ["#4c1d95", "#a78bfa", "#c084fc"],
+	blurStrength = "blur-3xl",
+	gradientFrom = "#2e026d",
+	gradientVia = "#0f0c29",
+	gradientTo = "#0b011b",
 }) => {
-  useEffect(() => {
-    const container = document.createElement("div");
-    container.id = "glowing-bg";
-    container.style.position = "absolute";
-    container.style.top = "0";
-    container.style.left = "0";
-    container.style.width = "100%";
-    container.style.height = height;
-    container.style.zIndex = zIndex.toString();
-    container.style.pointerEvents = "none";
-    container.style.overflow = "hidden";
+	useEffect(() => {
+		const container = document.createElement("div");
+		container.id = "glowing-bg";
+		container.style.position = "absolute";
+		container.style.top = "0";
+		container.style.left = "0";
+		container.style.width = "100%";
+		container.style.height = height;
+		container.style.zIndex = zIndex.toString();
+		container.style.pointerEvents = "none";
+		container.style.overflow = "hidden";
 
-    container.innerHTML = `
+		container.innerHTML = `
       <div style="
         position: absolute;
         inset: 0;
@@ -87,15 +87,15 @@ const GlowingBackground: React.FC<GlowingBackgroundProps> = ({
       </style>
     `;
 
-    document.body.appendChild(container);
+		document.body.appendChild(container);
 
-    return () => {
-      const existing = document.getElementById("glowing-bg");
-      if (existing) existing.remove();
-    };
-  }, [zIndex, height, ringColors, blurStrength, gradientFrom, gradientVia, gradientTo]);
+		return () => {
+			const existing = document.getElementById("glowing-bg");
+			if (existing) existing.remove();
+		};
+	}, [zIndex, height, ringColors, blurStrength, gradientFrom, gradientVia, gradientTo]);
 
-  return null;
+	return null;
 };
 
 export default GlowingBackground;

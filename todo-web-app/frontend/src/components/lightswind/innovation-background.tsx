@@ -1,7 +1,7 @@
 "use client";
-import * as THREE from "three";
-import { useRef, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
 
 const fragmentShader = `
 uniform vec2 iResolution;
@@ -53,79 +53,72 @@ void main() {
 `;
 
 const ShaderBackground = () => {
-  const meshRef = useRef<THREE.Mesh>(null!);
-  // Get size (width, height of the canvas) and camera from useThree hook
-  const { size, camera } = useThree();
+	const meshRef = useRef<THREE.Mesh>(null!);
+	// Get size (width, height of the canvas) and camera from useThree hook
+	const { size, camera } = useThree();
 
-  // Reference for the ShaderMaterial to avoid re-creating it on every render
-  const shaderMaterial = useRef(
-    new THREE.ShaderMaterial({
-      uniforms: {
-        iResolution: { value: new THREE.Vector2(size.width, size.height) },
-        iTime: { value: 0 },
-      },
-      fragmentShader,
-      vertexShader,
-    })
-  );
+	// Reference for the ShaderMaterial to avoid re-creating it on every render
+	const shaderMaterial = useRef(
+		new THREE.ShaderMaterial({
+			uniforms: {
+				iResolution: { value: new THREE.Vector2(size.width, size.height) },
+				iTime: { value: 0 },
+			},
+			fragmentShader,
+			vertexShader,
+		}),
+	);
 
-  // Update iTime uniform in the animation loop
-  useFrame(() => {
-    if (meshRef.current) {
-      // Use performance.now() for high-precision time
-      shaderMaterial.current.uniforms.iTime.value = performance.now() * 0.001;
-    }
-  });
+	// Update iTime uniform in the animation loop
+	useFrame(() => {
+		if (meshRef.current) {
+			// Use performance.now() for high-precision time
+			shaderMaterial.current.uniforms.iTime.value = performance.now() * 0.001;
+		}
+	});
 
-  // Effect to update iResolution and plane geometry when canvas size or camera zoom changes
-  useEffect(() => {
-    // 1. Update iResolution uniform for the shader
-    shaderMaterial.current.uniforms.iResolution.value.set(
-      size.width,
-      size.height
-    );
+	// Effect to update iResolution and plane geometry when canvas size or camera zoom changes
+	useEffect(() => {
+		// 1. Update iResolution uniform for the shader
+		shaderMaterial.current.uniforms.iResolution.value.set(size.width, size.height);
 
-    // 2. Adjust plane geometry to perfectly fit the orthographic camera's view frustum
-    const aspect = size.width / size.height;
-    // For an orthographic camera at position [0,0,1] looking at [0,0,0],
-    // the default vertical extent of the frustum (before zoom) is from -1 to 1,
-    // so total height is 2 units.
-    const frustumHeight = 2; 
-    const visibleHeight = frustumHeight / (camera as THREE.OrthographicCamera).zoom;
-    const visibleWidth = aspect * visibleHeight;
+		// 2. Adjust plane geometry to perfectly fit the orthographic camera's view frustum
+		const aspect = size.width / size.height;
+		// For an orthographic camera at position [0,0,1] looking at [0,0,0],
+		// the default vertical extent of the frustum (before zoom) is from -1 to 1,
+		// so total height is 2 units.
+		const frustumHeight = 2;
+		const visibleHeight = frustumHeight / (camera as THREE.OrthographicCamera).zoom;
+		const visibleWidth = aspect * visibleHeight;
 
-    if (meshRef.current) {
-      // Dispose of the old geometry to prevent memory leaks
-      meshRef.current.geometry.dispose(); 
-      // Create a new plane geometry with dimensions that exactly match the visible area
-      meshRef.current.geometry = new THREE.PlaneGeometry(
-        visibleWidth,
-        visibleHeight
-      );
-    }
-  }, [size, (camera as THREE.OrthographicCamera).zoom]); // Dependencies: re-run if canvas size or camera zoom changes
+		if (meshRef.current) {
+			// Dispose of the old geometry to prevent memory leaks
+			meshRef.current.geometry.dispose();
+			// Create a new plane geometry with dimensions that exactly match the visible area
+			meshRef.current.geometry = new THREE.PlaneGeometry(visibleWidth, visibleHeight);
+		}
+	}, [size, (camera as THREE.OrthographicCamera).zoom]); // Dependencies: re-run if canvas size or camera zoom changes
 
-  return (
-    <mesh ref={meshRef}>
-      {/* Initial plane geometry. It will be immediately replaced by the useEffect. */}
-      <planeGeometry args={[1, 1]} /> 
-      {/* Attach the material */}
-      <primitive object={shaderMaterial.current} attach="material" />
-    </mesh>
-  );
+	return (
+		<mesh ref={meshRef}>
+			{/* Initial plane geometry. It will be immediately replaced by the useEffect. */}
+			<planeGeometry args={[1, 1]} />
+			{/* Attach the material */}
+			<primitive object={shaderMaterial.current} attach="material" />
+		</mesh>
+	);
 };
 
 export default function ElectroBackground() {
-  return (
-    <div className="relative min-h-screen w-full ">
-      {/* Shader Canvas as Background */}
-      <div className="absolute inset-0 z-0">
-        <Canvas orthographic camera={{ position: [0, 0, 1], zoom: 1 }}>
-          {/* Set zoom to 1 for a straightforward 1:1 mapping with the calculated plane size */}
-          <ShaderBackground />
-        </Canvas>
-      </div>
-
-    </div>
-  );
+	return (
+		<div className="relative min-h-screen w-full ">
+			{/* Shader Canvas as Background */}
+			<div className="absolute inset-0 z-0">
+				<Canvas orthographic camera={{ position: [0, 0, 1], zoom: 1 }}>
+					{/* Set zoom to 1 for a straightforward 1:1 mapping with the calculated plane size */}
+					<ShaderBackground />
+				</Canvas>
+			</div>
+		</div>
+	);
 }

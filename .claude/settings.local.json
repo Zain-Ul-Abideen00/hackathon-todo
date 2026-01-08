@@ -1,0 +1,14 @@
+{
+  "disabledMcpjsonServers": [
+    "context7",
+    "deepwiki",
+    "playwright",
+    "better-auth",
+    "next-devtools"
+  ],
+  "permissions": {
+    "allow": [
+      "Bash(git --version)"
+    ]
+  }
+}

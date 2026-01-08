@@ -13,21 +13,21 @@ export type BlurSize = "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
  * @property {string} [className] - Additional CSS classes to apply to the container div.
  */
 interface HellBackgroundProps {
-  backdropBlurAmount?: string;
-  className?: string;
+	backdropBlurAmount?: string;
+	className?: string;
 }
 
 /**
  * A mapping from simplified blur size names to full Tailwind CSS backdrop-blur classes.
  */
 const blurClassMap: Record<BlurSize, string> = {
-  none: "backdrop-blur-none",
-  sm: "backdrop-blur-sm",
-  md: "backdrop-blur-md",
-  lg: "backdrop-blur-lg",
-  xl: "backdrop-blur-xl",
-  "2xl": "backdrop-blur-2xl",
-  "3xl": "backdrop-blur-3xl",
+	none: "backdrop-blur-none",
+	sm: "backdrop-blur-sm",
+	md: "backdrop-blur-md",
+	lg: "backdrop-blur-lg",
+	xl: "backdrop-blur-xl",
+	"2xl": "backdrop-blur-2xl",
+	"3xl": "backdrop-blur-3xl",
 };
 
 const vertexShaderSource = `
@@ -90,101 +90,101 @@ void main() {
 }
 `;
 
-
 function GradientBackground({
-  backdropBlurAmount = "none",
-  className = "",
+	backdropBlurAmount = "none",
+	className = "",
 }: HellBackgroundProps): JSX.Element {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+	const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+	useEffect(() => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
 
-    const gl = canvas.getContext("webgl");
-    if (!gl) {
-      console.error("WebGL not supported");
-      return;
-    }
+		const gl = canvas.getContext("webgl");
+		if (!gl) {
+			console.error("WebGL not supported");
+			return;
+		}
 
-    const compileShader = (type: number, source: string): WebGLShader | null => {
-      const shader = gl.createShader(type);
-      if (!shader) return null;
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        console.error("Shader compilation error:", gl.getShaderInfoLog(shader));
-        gl.deleteShader(shader);
-        return null;
-      }
-      return shader;
-    };
+		const compileShader = (type: number, source: string): WebGLShader | null => {
+			const shader = gl.createShader(type);
+			if (!shader) return null;
+			gl.shaderSource(shader, source);
+			gl.compileShader(shader);
+			if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+				console.error("Shader compilation error:", gl.getShaderInfoLog(shader));
+				gl.deleteShader(shader);
+				return null;
+			}
+			return shader;
+		};
 
-    const vertexShader = compileShader(gl.VERTEX_SHADER, vertexShaderSource);
-    const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
-    if (!vertexShader || !fragmentShader) return;
+		const vertexShader = compileShader(gl.VERTEX_SHADER, vertexShaderSource);
+		const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
+		if (!vertexShader || !fragmentShader) return;
 
-    const program = gl.createProgram();
-    if (!program) return;
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
+		const program = gl.createProgram();
+		if (!program) return;
+		gl.attachShader(program, vertexShader);
+		gl.attachShader(program, fragmentShader);
+		gl.linkProgram(program);
 
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error("Program linking error:", gl.getProgramInfoLog(program));
-      return;
-    }
+		if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+			console.error("Program linking error:", gl.getProgramInfoLog(program));
+			return;
+		}
 
-    gl.useProgram(program);
+		gl.useProgram(program);
 
-    const positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
-      gl.STATIC_DRAW
-    );
+		const positionBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+		gl.bufferData(
+			gl.ARRAY_BUFFER,
+			new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
+			gl.STATIC_DRAW,
+		);
 
-    const positionLocation = gl.getAttribLocation(program, "a_position");
-    gl.enableVertexAttribArray(positionLocation);
-    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+		const positionLocation = gl.getAttribLocation(program, "a_position");
+		gl.enableVertexAttribArray(positionLocation);
+		gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-    const iResolutionLocation = gl.getUniformLocation(program, "iResolution");
-    const iTimeLocation = gl.getUniformLocation(program, "iTime");
+		const iResolutionLocation = gl.getUniformLocation(program, "iResolution");
+		const iTimeLocation = gl.getUniformLocation(program, "iTime");
 
-    let startTime = Date.now();
+		const startTime = Date.now();
 
-    const render = () => {
-      const width = canvas.clientWidth;
-      const height = canvas.clientHeight;
-      canvas.width = width;
-      canvas.height = height;
-      gl.viewport(0, 0, width, height);
+		const render = () => {
+			const width = canvas.clientWidth;
+			const height = canvas.clientHeight;
+			canvas.width = width;
+			canvas.height = height;
+			gl.viewport(0, 0, width, height);
 
-      const currentTime = (Date.now() - startTime) / 1000;
-      gl.uniform2f(iResolutionLocation, width, height);
-      gl.uniform1f(iTimeLocation, currentTime);
+			const currentTime = (Date.now() - startTime) / 1000;
+			gl.uniform2f(iResolutionLocation, width, height);
+			gl.uniform1f(iTimeLocation, currentTime);
 
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
-      requestAnimationFrame(render);
-    };
+			gl.drawArrays(gl.TRIANGLES, 0, 6);
+			requestAnimationFrame(render);
+		};
 
-    render();
-  }, []);
+		render();
+	}, []);
 
-  const finalBlurClass = blurClassMap[backdropBlurAmount as BlurSize] || blurClassMap["sm"];
+	const finalBlurClass = blurClassMap[backdropBlurAmount as BlurSize] || blurClassMap["sm"];
 
-return (
-  <div className={`w-full max-w-screen h-full overflow-hidden bg-black dark:bg-black ${className}`}>
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full max-w-screen h-full overflow-hidden"
-      style={{ display: "block" }}
-    />
-    <div className={`absolute inset-0 ${finalBlurClass}`} />
-  </div>
-);
-
+	return (
+		<div
+			className={`w-full max-w-screen h-full overflow-hidden bg-black dark:bg-black ${className}`}
+		>
+			<canvas
+				ref={canvasRef}
+				className="absolute inset-0 w-full max-w-screen h-full overflow-hidden"
+				style={{ display: "block" }}
+			/>
+			<div className={`absolute inset-0 ${finalBlurClass}`} />
+		</div>
+	);
 }
 
 export default GradientBackground;

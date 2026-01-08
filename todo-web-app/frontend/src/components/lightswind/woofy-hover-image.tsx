@@ -1,58 +1,59 @@
 "use client";
-import React, { useEffect, useRef, useCallback } from 'react';
-import { cn } from '../../lib/utils';
-import * as THREE from 'three';
+import type React from "react";
+import { useCallback, useEffect, useRef } from "react";
+import * as THREE from "three";
+import { cn } from "../../lib/utils";
 
 export interface WoofyHoverImageProps {
-  src: string;
-  alt?: string;
-  width?: number | string;
-  height?: number | string;
-  className?: string;
-  // Changed 'blackwhite' to 'blackWhite' to match common casing and usage
-  effectType?: 'inversion' | 'blackWhite' | 'sepia' | 'duotone' | 'pixelate' | 'blur';
-  maskRadius?: number;
-  turbulenceIntensity?: number;
-  animationSpeed?: number;
-  appearDuration?: number;
-  disappearDuration?: number;
-  effectIntensity?: number;
-  invertMask?: boolean;
-  duotoneColor1?: string;
-  duotoneColor2?: string;
-  onHover?: () => void;
-  onLeave?: () => void;
+	src: string;
+	alt?: string;
+	width?: number | string;
+	height?: number | string;
+	className?: string;
+	// Changed 'blackwhite' to 'blackWhite' to match common casing and usage
+	effectType?: "inversion" | "blackWhite" | "sepia" | "duotone" | "pixelate" | "blur";
+	maskRadius?: number;
+	turbulenceIntensity?: number;
+	animationSpeed?: number;
+	appearDuration?: number;
+	disappearDuration?: number;
+	effectIntensity?: number;
+	invertMask?: boolean;
+	duotoneColor1?: string;
+	duotoneColor2?: string;
+	onHover?: () => void;
+	onLeave?: () => void;
 }
 
 const WoofyHoverImage: React.FC<WoofyHoverImageProps> = ({
-  src,
-  alt = '',
-  width = 'auto',
-  height = 400,
-  className,
-  effectType = 'inversion',
-  maskRadius = 0.35,
-  turbulenceIntensity = 0.225,
-  animationSpeed = 1.0,
-  appearDuration = 0.4,
-  disappearDuration = 0.3,
-  effectIntensity = 0.5,
-  invertMask = false,
-  duotoneColor1 = '#3366cc',
-  duotoneColor2 = '#e63333',
-  onHover,
-  onLeave,
+	src,
+	alt = "",
+	width = "auto",
+	height = 400,
+	className,
+	effectType = "inversion",
+	maskRadius = 0.35,
+	turbulenceIntensity = 0.225,
+	animationSpeed = 1.0,
+	appearDuration = 0.4,
+	disappearDuration = 0.3,
+	effectIntensity = 0.5,
+	invertMask = false,
+	duotoneColor1 = "#3366cc",
+	duotoneColor2 = "#e63333",
+	onHover,
+	onLeave,
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const uniformsRef = useRef<any>(null);
-  const animationIdRef = useRef<number | null>(null);
-  const isMouseInsideRef = useRef(false);
-  const targetMouseRef = useRef(new THREE.Vector2(0.5, 0.5));
-  const lerpedMouseRef = useRef(new THREE.Vector2(0.5, 0.5));
+	const containerRef = useRef<HTMLDivElement>(null);
+	const sceneRef = useRef<THREE.Scene | null>(null);
+	const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+	const uniformsRef = useRef<any>(null);
+	const animationIdRef = useRef<number | null>(null);
+	const isMouseInsideRef = useRef(false);
+	const targetMouseRef = useRef(new THREE.Vector2(0.5, 0.5));
+	const lerpedMouseRef = useRef(new THREE.Vector2(0.5, 0.5));
 
-  const vertexShader = `
+	const vertexShader = `
     varying vec2 v_uv;
     
     void main() {
@@ -61,7 +62,7 @@ const WoofyHoverImage: React.FC<WoofyHoverImageProps> = ({
     }
   `;
 
-  const fragmentShader = `
+	const fragmentShader = `
     precision highp float;
 
     uniform sampler2D u_texture;
@@ -255,207 +256,233 @@ const WoofyHoverImage: React.FC<WoofyHoverImageProps> = ({
     }
   `;
 
-  const getEffectTypeValue = (type: string): number => {
-    switch (type) {
-      case 'blackwhite': return 1;
-      case 'sepia': return 2;
-      case 'duotone': return 3;
-      case 'pixelate': return 4;
-      case 'blur': return 5;
-      default: return 0; // inversion
-    }
-  };
+	const getEffectTypeValue = (type: string): number => {
+		switch (type) {
+			case "blackwhite":
+				return 1;
+			case "sepia":
+				return 2;
+			case "duotone":
+				return 3;
+			case "pixelate":
+				return 4;
+			case "blur":
+				return 5;
+			default:
+				return 0; // inversion
+		}
+	};
 
-  const hexToRgb = (hex: string): THREE.Color => {
-    return new THREE.Color(hex);
-  };
+	const hexToRgb = (hex: string): THREE.Color => {
+		return new THREE.Color(hex);
+	};
 
-  const initializeEffect = useCallback(() => {
-    if (!containerRef.current) return;
+	const initializeEffect = useCallback(() => {
+		if (!containerRef.current) return;
 
-    const container = containerRef.current;
-    const loader = new THREE.TextureLoader();
+		const container = containerRef.current;
+		const loader = new THREE.TextureLoader();
 
-    loader.load(src, (texture) => {
-      const imageAspect = texture.image.width / texture.image.height;
-      
-      texture.minFilter = THREE.LinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-      texture.anisotropy = 8;
-      texture.generateMipmaps = false;
+		loader.load(src, (texture) => {
+			const imageAspect = texture.image.width / texture.image.height;
 
-      const scene = new THREE.Scene();
-      sceneRef.current = scene;
+			texture.minFilter = THREE.LinearFilter;
+			texture.magFilter = THREE.LinearFilter;
+			texture.anisotropy = 8;
+			texture.generateMipmaps = false;
 
-      const containerWidth = container.clientWidth;
-      const containerHeight = container.clientHeight;
+			const scene = new THREE.Scene();
+			sceneRef.current = scene;
 
-      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+			const containerWidth = container.clientWidth;
+			const containerHeight = container.clientHeight;
 
-      const uniforms = {
-        u_texture: { value: texture },
-        u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
-        u_time: { value: 0.0 },
-        u_resolution: { value: new THREE.Vector2(containerWidth, containerHeight) },
-        u_radius: { value: 0.0 },
-        u_speed: { value: 0.75 },
-        u_imageAspect: { value: imageAspect },
-        u_turbulenceIntensity: { value: turbulenceIntensity },
-        u_effectType: { value: getEffectTypeValue(effectType) },
-        u_effectIntensity: { value: effectIntensity },
-        u_invertMask: { value: invertMask },
-        u_effectColor1: { value: hexToRgb(duotoneColor1) },
-        u_effectColor2: { value: hexToRgb(duotoneColor2) },
-      };
+			const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-      uniformsRef.current = uniforms;
+			const uniforms = {
+				u_texture: { value: texture },
+				u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
+				u_time: { value: 0.0 },
+				u_resolution: { value: new THREE.Vector2(containerWidth, containerHeight) },
+				u_radius: { value: 0.0 },
+				u_speed: { value: 0.75 },
+				u_imageAspect: { value: imageAspect },
+				u_turbulenceIntensity: { value: turbulenceIntensity },
+				u_effectType: { value: getEffectTypeValue(effectType) },
+				u_effectIntensity: { value: effectIntensity },
+				u_invertMask: { value: invertMask },
+				u_effectColor1: { value: hexToRgb(duotoneColor1) },
+				u_effectColor2: { value: hexToRgb(duotoneColor2) },
+			};
 
-      const geometry = new THREE.PlaneGeometry(2, 2);
-      const material = new THREE.ShaderMaterial({
-        uniforms,
-        vertexShader,
-        fragmentShader,
-        depthTest: false,
-        depthWrite: false,
-      });
+			uniformsRef.current = uniforms;
 
-      const mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
+			const geometry = new THREE.PlaneGeometry(2, 2);
+			const material = new THREE.ShaderMaterial({
+				uniforms,
+				vertexShader,
+				fragmentShader,
+				depthTest: false,
+				depthWrite: false,
+			});
 
-      const renderer = new THREE.WebGLRenderer({
-        antialias: false,
-        powerPreference: "high-performance",
-        alpha: true,
-      });
+			const mesh = new THREE.Mesh(geometry, material);
+			scene.add(mesh);
 
-      renderer.setPixelRatio(1);
-      renderer.setSize(containerWidth, containerHeight);
-      rendererRef.current = renderer;
+			const renderer = new THREE.WebGLRenderer({
+				antialias: false,
+				powerPreference: "high-performance",
+				alpha: true,
+			});
 
-      // Clear any existing canvas
-      const existingCanvas = container.querySelector('canvas');
-      if (existingCanvas) {
-        existingCanvas.remove();
-      }
+			renderer.setPixelRatio(1);
+			renderer.setSize(containerWidth, containerHeight);
+			rendererRef.current = renderer;
 
-      container.appendChild(renderer.domElement);
-      renderer.domElement.style.position = 'absolute';
-      renderer.domElement.style.top = '0';
-      renderer.domElement.style.left = '0';
-      renderer.domElement.style.width = '100%';
-      renderer.domElement.style.height = '100%';
-      renderer.domElement.style.zIndex = '1';
+			// Clear any existing canvas
+			const existingCanvas = container.querySelector("canvas");
+			if (existingCanvas) {
+				existingCanvas.remove();
+			}
 
-      // Animation loop
-      const animate = () => {
-        if (!uniformsRef.current || !rendererRef.current || !sceneRef.current) return;
+			container.appendChild(renderer.domElement);
+			renderer.domElement.style.position = "absolute";
+			renderer.domElement.style.top = "0";
+			renderer.domElement.style.left = "0";
+			renderer.domElement.style.width = "100%";
+			renderer.domElement.style.height = "100%";
+			renderer.domElement.style.zIndex = "1";
 
-        lerpedMouseRef.current.lerp(targetMouseRef.current, 0.1);
-        uniformsRef.current.u_mouse.value.copy(lerpedMouseRef.current);
+			// Animation loop
+			const animate = () => {
+				if (!uniformsRef.current || !rendererRef.current || !sceneRef.current) return;
 
-        if (isMouseInsideRef.current) {
-          uniformsRef.current.u_time.value += 0.01 * animationSpeed;
-        }
+				lerpedMouseRef.current.lerp(targetMouseRef.current, 0.1);
+				uniformsRef.current.u_mouse.value.copy(lerpedMouseRef.current);
 
-        rendererRef.current.render(sceneRef.current, camera);
-        animationIdRef.current = requestAnimationFrame(animate);
-      };
+				if (isMouseInsideRef.current) {
+					uniformsRef.current.u_time.value += 0.01 * animationSpeed;
+				}
 
-      animate();
-    });
-  }, [src, effectType, maskRadius, turbulenceIntensity, animationSpeed, effectIntensity, invertMask, duotoneColor1, duotoneColor2]);
+				rendererRef.current.render(sceneRef.current, camera);
+				animationIdRef.current = requestAnimationFrame(animate);
+			};
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!containerRef.current || !uniformsRef.current) return;
+			animate();
+		});
+	}, [
+		src,
+		effectType,
+		maskRadius,
+		turbulenceIntensity,
+		animationSpeed,
+		effectIntensity,
+		invertMask,
+		duotoneColor1,
+		duotoneColor2,
+	]);
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const inside = e.clientX >= rect.left && e.clientX <= rect.right && 
-                  e.clientY >= rect.top && e.clientY <= rect.bottom;
+	const handleMouseMove = useCallback(
+		(e: MouseEvent) => {
+			if (!containerRef.current || !uniformsRef.current) return;
 
-    if (inside) {
-      targetMouseRef.current.x = (e.clientX - rect.left) / rect.width;
-      targetMouseRef.current.y = 1.0 - (e.clientY - rect.top) / rect.height;
+			const rect = containerRef.current.getBoundingClientRect();
+			const inside =
+				e.clientX >= rect.left &&
+				e.clientX <= rect.right &&
+				e.clientY >= rect.top &&
+				e.clientY <= rect.bottom;
 
-      if (!isMouseInsideRef.current) {
-        isMouseInsideRef.current = true;
-        onHover?.();
-        
-        // Animate radius to target value
-        const startRadius = uniformsRef.current.u_radius.value;
-        const targetRadius = maskRadius;
-        const startTime = Date.now();
-        
-        const animateRadius = () => {
-          const elapsed = (Date.now() - startTime) / 1000;
-          const progress = Math.min(elapsed / appearDuration, 1);
-          const easeProgress = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-          
-          uniformsRef.current.u_radius.value = startRadius + (targetRadius - startRadius) * easeProgress;
-          
-          if (progress < 1) {
-            requestAnimationFrame(animateRadius);
-          }
-        };
-        
-        animateRadius();
-      }
-    } else if (isMouseInsideRef.current) {
-      isMouseInsideRef.current = false;
-      onLeave?.();
-      
-      // Animate radius to zero
-      const startRadius = uniformsRef.current.u_radius.value;
-      const startTime = Date.now();
-      
-      const animateRadius = () => {
-        const elapsed = (Date.now() - startTime) / 1000;
-        const progress = Math.min(elapsed / disappearDuration, 1);
-        const easeProgress = Math.pow(progress, 3); // ease-in cubic
-        
-        uniformsRef.current.u_radius.value = startRadius * (1 - easeProgress);
-        
-        if (progress < 1) {
-          requestAnimationFrame(animateRadius);
-        }
-      };
-      
-      animateRadius();
-    }
-  }, [maskRadius, appearDuration, disappearDuration, onHover, onLeave]);
+			if (inside) {
+				targetMouseRef.current.x = (e.clientX - rect.left) / rect.width;
+				targetMouseRef.current.y = 1.0 - (e.clientY - rect.top) / rect.height;
 
-  useEffect(() => {
-    initializeEffect();
+				if (!isMouseInsideRef.current) {
+					isMouseInsideRef.current = true;
+					onHover?.();
 
-    document.addEventListener('mousemove', handleMouseMove, { passive: true });
+					// Animate radius to target value
+					const startRadius = uniformsRef.current.u_radius.value;
+					const targetRadius = maskRadius;
+					const startTime = Date.now();
 
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      
-      if (animationIdRef.current) {
-        cancelAnimationFrame(animationIdRef.current);
-      }
-      
-      if (rendererRef.current) {
-        rendererRef.current.dispose();
-      }
-    };
-  }, [initializeEffect, handleMouseMove]);
+					const animateRadius = () => {
+						const elapsed = (Date.now() - startTime) / 1000;
+						const progress = Math.min(elapsed / appearDuration, 1);
+						const easeProgress = 1 - (1 - progress) ** 3; // ease-out cubic
 
-  return (
-    <div
-      ref={containerRef}
-      className={cn(`relative overflow-hidden flex 
-        items-center justify-center`, className)}
-      style={{ width, height }}
-    >
-      <img
-        src={src}
-        alt={alt}
-        className="w-full h-full object-cover"
-        style={{ position: 'relative', zIndex: 0 }}
-      />
-    </div>
-  );
+						uniformsRef.current.u_radius.value =
+							startRadius + (targetRadius - startRadius) * easeProgress;
+
+						if (progress < 1) {
+							requestAnimationFrame(animateRadius);
+						}
+					};
+
+					animateRadius();
+				}
+			} else if (isMouseInsideRef.current) {
+				isMouseInsideRef.current = false;
+				onLeave?.();
+
+				// Animate radius to zero
+				const startRadius = uniformsRef.current.u_radius.value;
+				const startTime = Date.now();
+
+				const animateRadius = () => {
+					const elapsed = (Date.now() - startTime) / 1000;
+					const progress = Math.min(elapsed / disappearDuration, 1);
+					const easeProgress = progress ** 3; // ease-in cubic
+
+					uniformsRef.current.u_radius.value = startRadius * (1 - easeProgress);
+
+					if (progress < 1) {
+						requestAnimationFrame(animateRadius);
+					}
+				};
+
+				animateRadius();
+			}
+		},
+		[maskRadius, appearDuration, disappearDuration, onHover, onLeave],
+	);
+
+	useEffect(() => {
+		initializeEffect();
+
+		document.addEventListener("mousemove", handleMouseMove, { passive: true });
+
+		return () => {
+			document.removeEventListener("mousemove", handleMouseMove);
+
+			if (animationIdRef.current) {
+				cancelAnimationFrame(animationIdRef.current);
+			}
+
+			if (rendererRef.current) {
+				rendererRef.current.dispose();
+			}
+		};
+	}, [initializeEffect, handleMouseMove]);
+
+	return (
+		<div
+			ref={containerRef}
+			className={cn(
+				`relative overflow-hidden flex 
+        items-center justify-center`,
+				className,
+			)}
+			style={{ width, height }}
+		>
+			<img
+				src={src}
+				alt={alt}
+				className="w-full h-full object-cover"
+				style={{ position: "relative", zIndex: 0 }}
+			/>
+		</div>
+	);
 };
 
 export default WoofyHoverImage;
