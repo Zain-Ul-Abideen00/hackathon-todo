@@ -1,39 +1,39 @@
-import React from "react";
+import type React from "react";
 
 interface RippleButtonProps {
-  text?: string;
-  bgColor?: string;
-  circleColor?: string;
-  width?: string;  // e.g., "200px" or "100%"
-  height?: string; // e.g., "50px"
+	text?: string;
+	bgColor?: string;
+	circleColor?: string;
+	width?: string; // e.g., "200px" or "100%"
+	height?: string; // e.g., "50px"
 }
 
 const RippleButton: React.FC<RippleButtonProps> = ({
-  text = "Click Me",
-  bgColor,
-  circleColor,
-  width,
-  height,
+	text = "Click Me",
+	bgColor,
+	circleColor,
+	width,
+	height,
 }) => {
-  return (
-    <>
-      <button
-        className={`ripple-btn text-white dark:text-black dark:bg-white bg-black`}
-        style={{
-          backgroundColor: bgColor,
-          width: width,
-          height: height,
-        }}
-      >
-        <span className="circle1"></span>
-        <span className="circle2"></span>
-        <span className="circle3"></span>
-        <span className="circle4"></span>
-        <span className="circle5"></span>
-        <span className="text">{text}</span>
-      </button>
+	return (
+		<>
+			<button
+				className={`ripple-btn text-white dark:text-black dark:bg-white bg-black`}
+				style={{
+					backgroundColor: bgColor,
+					width: width,
+					height: height,
+				}}
+			>
+				<span className="circle1"></span>
+				<span className="circle2"></span>
+				<span className="circle3"></span>
+				<span className="circle4"></span>
+				<span className="circle5"></span>
+				<span className="text">{text}</span>
+			</button>
 
-      <style jsx>{`
+			<style jsx>{`
         .ripple-btn {
           font-family: Arial, Helvetica, sans-serif;
           font-weight: bold;
@@ -92,8 +92,8 @@ const RippleButton: React.FC<RippleButtonProps> = ({
           transition: 1.5s ease;
         }
       `}</style>
-    </>
-  );
+		</>
+	);
 };
 
 export default RippleButton;

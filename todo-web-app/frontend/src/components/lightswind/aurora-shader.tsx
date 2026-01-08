@@ -1,13 +1,13 @@
 "use client";
 
+import { Color, Mesh, Program, Renderer, Triangle } from "ogl";
 import { useEffect, useRef } from "react";
-import { Renderer, Program, Mesh, Color, Triangle } from "ogl";
 
 interface AuroraProps {
-  colorStops?: string[];
-  amplitude?: number;
-  blend?: number;
-  speed?: number;
+	colorStops?: string[];
+	amplitude?: number;
+	blend?: number;
+	speed?: number;
 }
 
 const VERTEX_SHADER = `#version 300 es
@@ -97,87 +97,87 @@ void main(){
 `;
 
 export default function AuroraShader({
-  colorStops = ["#5227FF", "#7cff67", "#5227FF"],
-  amplitude = 1.0,
-  blend = 0.5,
-  speed = 1.0,
+	colorStops = ["#5227FF", "#7cff67", "#5227FF"],
+	amplitude = 1.0,
+	blend = 0.5,
+	speed = 1.0,
 }: AuroraProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mouseRef = useRef({ x: 0, y: 0 });
+	const containerRef = useRef<HTMLDivElement>(null);
+	const mouseRef = useRef({ x: 0, y: 0 });
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+	useEffect(() => {
+		const container = containerRef.current;
+		if (!container) return;
 
-    const renderer = new Renderer({ alpha: true, antialias: true });
-    const gl = renderer.gl;
-    gl.clearColor(0, 0, 0, 0);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+		const renderer = new Renderer({ alpha: true, antialias: true });
+		const gl = renderer.gl;
+		gl.clearColor(0, 0, 0, 0);
+		gl.enable(gl.BLEND);
+		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-    const geometry = new Triangle(gl);
-    if (geometry.attributes.uv) delete geometry.attributes.uv;
+		const geometry = new Triangle(gl);
+		if (geometry.attributes.uv) delete geometry.attributes.uv;
 
-    const program = new Program(gl, {
-      vertex: VERTEX_SHADER,
-      fragment: FRAGMENT_SHADER,
-      uniforms: {
-        uTime: { value: 0 },
-        uAmplitude: { value: amplitude },
-        uBlend: { value: blend },
-        uResolution: { value: [container.offsetWidth, container.offsetHeight] },
-        uColorStops: {
-          value: colorStops.map((hex) => {
-            const c = new Color(hex);
-            return [c.r, c.g, c.b];
-          }),
-        },
-        uMouse: { value: [0, 0] },
-      },
-    });
+		const program = new Program(gl, {
+			vertex: VERTEX_SHADER,
+			fragment: FRAGMENT_SHADER,
+			uniforms: {
+				uTime: { value: 0 },
+				uAmplitude: { value: amplitude },
+				uBlend: { value: blend },
+				uResolution: { value: [container.offsetWidth, container.offsetHeight] },
+				uColorStops: {
+					value: colorStops.map((hex) => {
+						const c = new Color(hex);
+						return [c.r, c.g, c.b];
+					}),
+				},
+				uMouse: { value: [0, 0] },
+			},
+		});
 
-    const mesh = new Mesh(gl, { geometry, program });
-    container.appendChild(gl.canvas);
+		const mesh = new Mesh(gl, { geometry, program });
+		container.appendChild(gl.canvas);
 
-    const resize = () => {
-      const width = container.offsetWidth;
-      const height = container.offsetHeight;
-      renderer.setSize(width, height);
-      program.uniforms.uResolution.value = [width, height];
-    };
-    window.addEventListener("resize", resize);
-    resize();
+		const resize = () => {
+			const width = container.offsetWidth;
+			const height = container.offsetHeight;
+			renderer.setSize(width, height);
+			program.uniforms.uResolution.value = [width, height];
+		};
+		window.addEventListener("resize", resize);
+		resize();
 
-    const onMouseMove = (e: MouseEvent) => {
-      // Smooth lerp for mouse
-      mouseRef.current.x += (e.clientX - mouseRef.current.x) * 0.05;
-      mouseRef.current.y += (e.clientY - mouseRef.current.y) * 0.05;
-    };
-    window.addEventListener("mousemove", onMouseMove);
+		const onMouseMove = (e: MouseEvent) => {
+			// Smooth lerp for mouse
+			mouseRef.current.x += (e.clientX - mouseRef.current.x) * 0.05;
+			mouseRef.current.y += (e.clientY - mouseRef.current.y) * 0.05;
+		};
+		window.addEventListener("mousemove", onMouseMove);
 
-    let animationId: number;
+		let animationId: number;
 
-    const animate = (t: number) => {
-      animationId = requestAnimationFrame(animate);
+		const animate = (t: number) => {
+			animationId = requestAnimationFrame(animate);
 
-      // Smooth interpolation
-      program.uniforms.uTime.value = t * 0.001 * speed;
-      program.uniforms.uAmplitude.value = amplitude;
-      program.uniforms.uBlend.value = blend;
-      program.uniforms.uMouse.value = [mouseRef.current.x, mouseRef.current.y];
+			// Smooth interpolation
+			program.uniforms.uTime.value = t * 0.001 * speed;
+			program.uniforms.uAmplitude.value = amplitude;
+			program.uniforms.uBlend.value = blend;
+			program.uniforms.uMouse.value = [mouseRef.current.x, mouseRef.current.y];
 
-      renderer.render({ scene: mesh });
-    };
-    animate(0);
+			renderer.render({ scene: mesh });
+		};
+		animate(0);
 
-    return () => {
-      cancelAnimationFrame(animationId);
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("mousemove", onMouseMove);
-      if (gl.canvas.parentNode === container) container.removeChild(gl.canvas);
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
-    };
-  }, [amplitude, blend, colorStops, speed]);
+		return () => {
+			cancelAnimationFrame(animationId);
+			window.removeEventListener("resize", resize);
+			window.removeEventListener("mousemove", onMouseMove);
+			if (gl.canvas.parentNode === container) container.removeChild(gl.canvas);
+			gl.getExtension("WEBGL_lose_context")?.loseContext();
+		};
+	}, [amplitude, blend, colorStops, speed]);
 
-  return <div ref={containerRef} className="w-full h-full absolute bottom-0" />;
+	return <div ref={containerRef} className="w-full h-full absolute bottom-0" />;
 }
