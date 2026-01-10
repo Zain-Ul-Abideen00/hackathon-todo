@@ -3,17 +3,25 @@ Todo Web App - FastAPI Backend.
 
 This module configures and runs the FastAPI application with:
 - CORS middleware for frontend communication
+- Rate limiting middleware (100 req/min per user - FR-016)
 - Router configuration for modular endpoints
+- Custom exception handlers for validation errors
 - Lifespan events for startup/shutdown
 """
 
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import ValidationError
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
+from src.api.deps import limiter
 from src.api.routes import health
+from src.api.routes.tasks import router as tasks_router
 
 
 @asynccontextmanager
@@ -27,14 +35,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """
     # Startup
     print("🚀 Starting Todo Web App Backend...")
-    # TODO: Initialize database connection in Module 2
-    # TODO: Load environment configuration
+    # Database connection is established on first request via deps.get_session
 
     yield
 
     # Shutdown
     print("👋 Shutting down Todo Web App Backend...")
-    # TODO: Close database connections
 
 
 # Create FastAPI application
@@ -46,6 +52,10 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan,
 )
+
+# Configure rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS
 # TODO: Move origins to environment configuration
@@ -62,8 +72,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# Custom exception handlers
+
+
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: Request, exc: ValidationError) -> JSONResponse:
+    """Handle Pydantic validation errors with consistent error format."""
+    errors = []
+    for error in exc.errors():
+        errors.append(
+            {
+                "field": ".".join(str(loc) for loc in error["loc"]),
+                "message": error["msg"],
+            }
+        )
+
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={
+            "code": "VALIDATION_ERROR",
+            "message": "Request validation failed",
+            "details": errors,
+        },
+    )
+
+
 # Include routers
 app.include_router(health.router, prefix="/api", tags=["Health"])
+app.include_router(tasks_router, prefix="/api", tags=["Tasks"])
 
 
 @app.get("/")
@@ -73,4 +110,5 @@ async def root() -> dict[str, str]:
         "message": "Todo Web App API",
         "docs": "/docs",
         "health": "/api/health",
+        "tasks": "/api/{user_id}/tasks",
     }
