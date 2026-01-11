@@ -49,13 +49,20 @@ async def test_session(test_engine):
 
 @pytest.fixture
 async def client(test_engine):
-    """Create async test client with overridden database session."""
+    """Create async test client with overridden database session and auth."""
 
     async def override_get_session():
         async with AsyncSession(test_engine) as session:
             yield session
 
+    def override_get_current_user():
+        """Mock auth - returns test user for all requests."""
+        return {"id": TEST_USER, "email": "test@example.com"}
+
     app.dependency_overrides[get_session] = override_get_session
+    # Import the real get_current_user to override it
+    from src.auth.dependencies import get_current_user
+    app.dependency_overrides[get_current_user] = override_get_current_user
 
     async with AsyncClient(
         transport=ASGITransport(app=app),

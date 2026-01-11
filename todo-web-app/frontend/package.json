@@ -18,6 +18,7 @@
 		"@react-three/fiber": "^9.5.0",
 		"@tsparticles/react": "^3.0.0",
 		"@tsparticles/slim": "^3.9.1",
+		"better-auth": "^1.4.10",
 		"clsx": "^2.1.1",
 		"cobe": "^0.6.5",
 		"date-fns": "^4.1.0",
@@ -31,6 +32,7 @@
 		"next": "16.1.1",
 		"next-devtools-mcp": "^0.3.8",
 		"ogl": "^1.0.11",
+		"pg": "^8.16.3",
 		"react": "19.2.3",
 		"react-day-picker": "^9.13.0",
 		"react-dom": "19.2.3",
@@ -41,6 +43,7 @@
 		"tailwind-merge": "^3.4.0"
 	},
 	"devDependencies": {
+		"@better-auth/cli": "1.4.10",
 		"@biomejs/biome": "^2.3.11",
 		"@tailwindcss/postcss": "^4",
 		"@types/node": "^20",

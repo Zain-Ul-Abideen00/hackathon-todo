@@ -1,0 +1,194 @@
+openapi: 3.0.3
+info:
+  title: Todo App Authentication API
+  description: Authentication endpoints exposed by Better Auth on the frontend
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000/api/auth
+    description: Development server
+
+paths:
+  /sign-up/email:
+    post:
+      summary: Register new user
+      operationId: signUpEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                name:
+                  type: string
+      responses:
+        "200":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sign-in/email:
+    post:
+      summary: Sign in with email and password
+      operationId: signInEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Sign in successful
+          headers:
+            Set-Cookie:
+              description: Session cookie (HTTP-only)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sign-out:
+    post:
+      summary: Sign out current user
+      operationId: signOut
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Signed out successfully
+          headers:
+            Set-Cookie:
+              description: Cleared session cookie
+              schema:
+                type: string
+
+  /session:
+    get:
+      summary: Get current session
+      operationId: getSession
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Session data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "401":
+          description: Not authenticated
+
+  /token:
+    get:
+      summary: Get JWT token for API calls
+      operationId: getToken
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token (HS256 signed)
+
+components:
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        session:
+          $ref: "#/components/schemas/Session"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        emailVerified:
+          type: boolean
+        image:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
