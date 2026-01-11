@@ -13,7 +13,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, status
 
-from src.api.deps import DBSession, get_current_user, limiter, verify_user_access
+from src.api.deps import DBSession, get_current_user, limiter, validate_user_access
 from src.schemas.task import (
     TaskCreate,
     TaskDeleteResponse,
@@ -52,7 +52,7 @@ async def create_task(
     - **title**: Required, 1-200 characters
     - **description**: Optional, max 1000 characters
     """
-    verify_user_access(user_id, current_user)
+    validate_user_access(user_id, current_user)
 
     task = await task_service.create_task(session, task_data, user_id)
     return TaskResponse.model_validate(task)
@@ -93,7 +93,7 @@ async def list_tasks(
     - **cursor**: Pagination cursor from previous response
     - **limit**: Items per page (1-100, default 20)
     """
-    verify_user_access(user_id, current_user)
+    validate_user_access(user_id, current_user)
 
     # Convert status filter to completed boolean
     completed = None
@@ -143,7 +143,7 @@ async def get_task(
 
     Returns 404 if task doesn't exist or belongs to another user (security).
     """
-    verify_user_access(user_id, current_user)
+    validate_user_access(user_id, current_user)
 
     task = await task_service.get_task(session, task_id, user_id)
     if not task:
@@ -181,7 +181,7 @@ async def update_task(
 
     Supports partial updates - only provided fields are modified.
     """
-    verify_user_access(user_id, current_user)
+    validate_user_access(user_id, current_user)
 
     task = await task_service.update_task(session, task_id, user_id, task_data)
     if not task:
@@ -214,7 +214,7 @@ async def delete_task(
     current_user: Annotated[dict, Depends(get_current_user)],
 ) -> TaskDeleteResponse:
     """Permanently delete a task (hard delete per FR-017)."""
-    verify_user_access(user_id, current_user)
+    validate_user_access(user_id, current_user)
 
     deleted = await task_service.delete_task(session, task_id, user_id)
     if not deleted:
@@ -250,7 +250,7 @@ async def toggle_complete(
 
     If pending → completed. If completed → pending.
     """
-    verify_user_access(user_id, current_user)
+    validate_user_access(user_id, current_user)
 
     task = await task_service.toggle_task_completion(session, task_id, user_id)
     if not task:
