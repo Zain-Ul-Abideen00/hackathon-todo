@@ -11,9 +11,14 @@ This module configures and runs the FastAPI application with:
 
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+import os
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+
+# Load environment variables explicitly
+load_dotenv()
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from slowapi import _rate_limit_exceeded_handler
@@ -53,16 +58,32 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Configure rate limiter
+# Configure Rate Limiter
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Configure CORS
-# TODO: Move origins to environment configuration
-CORS_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+# Global Exception Logic for Debugging (Re-added)
+@app.middleware("http")
+async def catch_exceptions_middleware(request: Request, call_next):
+    try:
+        return await call_next(request)
+    except Exception as e:
+        import traceback
+        print(f"🔥 GLOBAL UNHANDLED EXCEPTION 🔥: {e}")
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"message": "Internal Server Error", "detail": str(e)},
+            headers={
+                "Access-Control-Allow-Origin": "http://localhost:3000",
+                "Access-Control-Allow-Methods": "*",
+                "Access-Control-Allow-Headers": "*",
+            },
+        )
+
+# Configure CORS from environment (comma-separated origins)
+cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+CORS_ORIGINS = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
 
 app.add_middleware(
     CORSMiddleware,

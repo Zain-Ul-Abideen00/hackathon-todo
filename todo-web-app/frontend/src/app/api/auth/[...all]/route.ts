@@ -12,8 +12,8 @@
  * - GET  /api/auth/token - Get JWT for API calls
  */
 
-import { auth } from "@/lib/auth";
 import { toNextJsHandler } from "better-auth/next-js";
+import { auth } from "@/lib/auth";
 
 // Export handlers for all HTTP methods Better Auth needs
 export const { GET, POST } = toNextJsHandler(auth);

@@ -17,6 +17,9 @@ class TaskCreate(BaseModel):
     description: str | None = Field(
         default=None, max_length=1000, description="Optional task description"
     )
+    status: str = Field(default="todo", description="Task status (todo, in_progress, completed)")
+    priority: str = Field(default="medium", description="Task priority (low, medium, high)")
+    due_date: datetime | None = Field(default=None, description="Due date")
 
 
 class TaskUpdate(BaseModel):
@@ -28,6 +31,9 @@ class TaskUpdate(BaseModel):
         title: New title (1-200 characters)
         description: New description (max 1000 characters)
         completed: New completion status
+        status: New status
+        priority: New priority
+        due_date: New due date
     """
 
     title: str | None = Field(default=None, min_length=1, max_length=200, description="Task title")
@@ -35,6 +41,9 @@ class TaskUpdate(BaseModel):
         default=None, max_length=1000, description="Task description"
     )
     completed: bool | None = Field(default=None, description="Completion status")
+    status: str | None = Field(default=None, description="Task status")
+    priority: str | None = Field(default=None, description="Task priority")
+    due_date: datetime | None = Field(default=None, description="Due date")
 
 
 class TaskResponse(BaseModel):
@@ -48,6 +57,9 @@ class TaskResponse(BaseModel):
     title: str = Field(..., description="Task title")
     description: str | None = Field(default=None, description="Task description")
     completed: bool = Field(..., description="Completion status")
+    status: str = Field(..., description="Task status")
+    priority: str = Field(..., description="Task priority")
+    due_date: datetime | None = Field(default=None, description="Due date")
     created_at: datetime = Field(..., description="Creation timestamp (UTC)")
     updated_at: datetime = Field(..., description="Last modification timestamp (UTC)")
 

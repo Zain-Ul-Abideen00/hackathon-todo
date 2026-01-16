@@ -89,7 +89,7 @@ export const GlowingCards: React.FC<GlowingCardsProps> = ({
 }) => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const overlayRef = useRef<HTMLDivElement>(null);
-	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+	const [_mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 	const [showOverlay, setShowOverlay] = useState(false);
 
 	useEffect(() => {
@@ -107,8 +107,8 @@ export const GlowingCards: React.FC<GlowingCardsProps> = ({
 			setShowOverlay(true);
 
 			// Using string concatenation for style properties
-			overlay.style.setProperty("--x", x + "px");
-			overlay.style.setProperty("--y", y + "px");
+			overlay.style.setProperty("--x", `${x}px`);
+			overlay.style.setProperty("--y", `${y}px`);
 			overlay.style.setProperty("--opacity", glowOpacity.toString());
 		};
 
@@ -131,8 +131,8 @@ export const GlowingCards: React.FC<GlowingCardsProps> = ({
 		"--max-width": maxWidth,
 		"--padding": padding,
 		"--border-radius": borderRadius,
-		"--animation-duration": animationDuration + "ms", // Concatenation
-		"--glow-radius": glowRadius + "rem", // Concatenation
+		"--animation-duration": `${animationDuration}ms`, // Concatenation
+		"--glow-radius": `${glowRadius}rem`, // Concatenation
 		"--glow-opacity": glowOpacity,
 		backgroundColor: backgroundColor || undefined,
 		...customTheme,
@@ -176,21 +176,21 @@ export const GlowingCards: React.FC<GlowingCardsProps> = ({
 							)}
 							style={{ padding: "var(--padding)" }} // String literal
 						>
-							{React.Children.map(children, (child, index) => {
+							{React.Children.map(children, (child, _index) => {
 								if (React.isValidElement(child) && child.type === GlowingCard) {
-									const cardGlowColor = child.props.glowColor || "#3b82f6";
+									const cardGlowColor = (child.props as any).glowColor || "#3b82f6";
 									return React.cloneElement(child as React.ReactElement<any>, {
 										className: cn(
-											child.props.className,
+											(child.props as any).className,
 											"bg-opacity-15 dark:bg-opacity-15",
 											"border-opacity-100 dark:border-opacity-100",
 										),
 										style: {
-											...child.props.style,
+											...(child.props as any).style,
 											// String concatenation for background, border, and boxShadow
-											backgroundColor: cardGlowColor + "15",
+											backgroundColor: `${cardGlowColor}15`,
 											borderColor: cardGlowColor,
-											boxShadow: "0 0 0 1px inset " + cardGlowColor,
+											boxShadow: `0 0 0 1px inset ${cardGlowColor}`,
 										},
 									});
 								}

@@ -1,15 +1,11 @@
 /**
  * Sign Up Page
  *
- * User registration page with SignUpForm component.
+ * User registration page using auth layout.
  */
 
-import { SignUpForm } from "@/components/auth/SignUpForm";
+import { SignUpForm } from "@/components/auth";
 
 export default function SignUpPage() {
-  return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-      <SignUpForm />
-    </main>
-  );
+	return <SignUpForm />;
 }

@@ -19,7 +19,7 @@ function useDockItemSize(
 	spring: { mass: number; stiffness: number; damping: number },
 ) {
 	const mouseDistance = useTransform(mouseX, (val) => {
-		if (typeof val !== "number" || isNaN(val)) return 0;
+		if (typeof val !== "number" || Number.isNaN(val)) return 0;
 		const rect = ref.current?.getBoundingClientRect() ?? {
 			x: 0,
 			width: baseItemSize,
@@ -61,7 +61,14 @@ function DockItem({
 }: DockItemProps) {
 	const ref = useRef<HTMLDivElement>(null);
 	const isHovered = useMotionValue(0);
-	const size = useDockItemSize(mouseX, baseItemSize, magnification, distance, ref, spring);
+	const size = useDockItemSize(
+		mouseX,
+		baseItemSize,
+		magnification,
+		distance,
+		ref as React.RefObject<HTMLDivElement>,
+		spring,
+	);
 	const [showLabel, setShowLabel] = useState(false);
 
 	useEffect(() => {
@@ -78,7 +85,7 @@ function DockItem({
 			onFocus={() => isHovered.set(1)}
 			onBlur={() => isHovered.set(0)}
 			onClick={onClick}
-			className="relative inline-flex items-center justify-center rounded-full 
+			className="relative inline-flex items-center justify-center rounded-full
       bg-background    shadow-md  "
 			tabIndex={0}
 			role="button"
@@ -97,7 +104,7 @@ function DockItem({
 						animate={{ opacity: 1, y: -10 }}
 						exit={{ opacity: 0, y: 0 }}
 						transition={{ duration: 0.2 }}
-						className="absolute -top-6 left-1/2 w-fit whitespace-pre rounded-md 
+						className="absolute -top-6 left-1/2 w-fit whitespace-pre rounded-md
             border border   bg-[#060606] px-2 py-0.5 text-xs text-white"
 						style={{ x: "-50%" }}
 						role="tooltip"
@@ -163,8 +170,8 @@ export default function Dock({
 					isHovered.set(0);
 					mouseX.set(Infinity);
 				}}
-				className={`absolute bottom-2 left-1/2 -translate-x-1/2 transform 
-            flex items-end gap-4 w-fit rounded-2xl 
+				className={`absolute bottom-2 left-1/2 -translate-x-1/2 transform
+            flex items-end gap-4 w-fit rounded-2xl
             border-2 border   px-4 pb-2 ${className}`}
 				style={{ height: panelHeight }}
 				role="toolbar"

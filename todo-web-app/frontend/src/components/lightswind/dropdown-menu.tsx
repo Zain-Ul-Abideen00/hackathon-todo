@@ -93,7 +93,7 @@ const DropdownMenuTrigger = React.forwardRef<
 			return document.createElement("button"); // Return a dummy element to satisfy the type
 		}
 		return triggerRef.current as HTMLButtonElement;
-	}, []);
+	}, [triggerRef.current]);
 
 	const handleMouseEnter = (e: React.MouseEvent<HTMLElement>) => {
 		if (hoverMode) {
@@ -136,7 +136,7 @@ const DropdownMenuTrigger = React.forwardRef<
 		}
 
 		return React.cloneElement(child, {
-			...child.props,
+			...(child.props as any),
 			ref: (node: HTMLElement | null) => {
 				// Update the internal triggerRef
 				triggerRef.current = node;
@@ -161,15 +161,15 @@ const DropdownMenuTrigger = React.forwardRef<
 			},
 			onClick: (e: React.MouseEvent) => {
 				handleClick(e as React.MouseEvent<HTMLButtonElement>);
-				if (child.props.onClick) child.props.onClick(e);
+				if ((child.props as any).onClick) (child.props as any).onClick(e);
 			},
 			onMouseEnter: (e: React.MouseEvent) => {
 				handleMouseEnter(e as React.MouseEvent<HTMLElement>);
-				if (child.props.onMouseEnter) child.props.onMouseEnter(e);
+				if ((child.props as any).onMouseEnter) (child.props as any).onMouseEnter(e);
 			},
 			onMouseLeave: (e: React.MouseEvent) => {
 				handleMouseLeaveTrigger(e as React.MouseEvent<HTMLElement>);
-				if (child.props.onMouseLeave) child.props.onMouseLeave(e);
+				if ((child.props as any).onMouseLeave) (child.props as any).onMouseLeave(e);
 			},
 		});
 	}
@@ -198,8 +198,8 @@ const DropdownMenuTrigger = React.forwardRef<
 DropdownMenuTrigger.displayName = "DropdownMenuTrigger";
 
 const dropdownMenuContentVariants = cva(
-	`z-50 min-w-[8rem] overflow-hidden rounded-md border  
-   bg-popover p-1 text-popover-foreground shadow-md`,
+	`z-50 min-w-[8rem] overflow-hidden rounded-md border border-border
+   bg-popover/95 p-1 text-popover-foreground shadow-lg backdrop-blur-sm`,
 	{
 		variants: {
 			variant: {
@@ -256,7 +256,10 @@ const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContent
 
 		const { open, setOpen, hoverMode, triggerRef } = context;
 		const menuRef = React.useRef<HTMLDivElement | null>(null);
-		const [position, setPosition] = React.useState({ top: 0, left: 0 });
+		const [position, setPosition] = React.useState<{ top: number; left?: number; right?: number }>({
+			top: 0,
+			left: 0,
+		});
 
 		const contentMouseLeaveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -336,7 +339,8 @@ const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContent
 				}
 
 				let top = 0;
-				let left = 0;
+				let left: number | undefined = 0;
+				let right: number | undefined;
 
 				if (side === "bottom") {
 					top = triggerRect.bottom + sideOffset;
@@ -345,6 +349,8 @@ const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContent
 				} else if (side === "left" || side === "right") {
 					top = triggerRect.top + triggerRect.height / 2 - (menuRect?.height || 0) / 2;
 				}
+
+				const windowWidth = window.innerWidth;
 
 				if (side === "right") {
 					left = triggerRect.right + sideOffset;
@@ -357,19 +363,23 @@ const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContent
 						left =
 							triggerRect.left + triggerRect.width / 2 - (menuRect?.width || 0) / 2 + alignOffset;
 					} else if (align === "end") {
-						left = triggerRect.right - (menuRect?.width || 0) - alignOffset;
+						// Robust positioning for 'end' alignment using CSS right property
+						// This avoids issues where menu width is not yet known or 0
+						right = windowWidth - triggerRect.right - alignOffset;
+						left = undefined;
 					}
 				}
 
-				const windowWidth = window.innerWidth;
 				const windowHeight = window.innerHeight;
 
-				if (left + (menuRect?.width || 0) > windowWidth) {
-					left = windowWidth - (menuRect?.width || 0) - 8;
-				}
-
-				if (left < 8) {
-					left = 8;
+				// Overflow checks (only if left is used)
+				if (left !== undefined) {
+					if (left + (menuRect?.width || 0) > windowWidth) {
+						left = windowWidth - (menuRect?.width || 0) - 8;
+					}
+					if (left < 8) {
+						left = 8;
+					}
 				}
 
 				if (top + (menuRect?.height || 0) > windowHeight) {
@@ -383,7 +393,7 @@ const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContent
 					}
 				}
 
-				setPosition({ top, left });
+				setPosition({ top, left, right });
 			};
 
 			updatePosition();
@@ -395,7 +405,7 @@ const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContent
 				window.removeEventListener("scroll", updatePosition, true);
 				window.removeEventListener("resize", updatePosition);
 			};
-		}, [open, align, alignOffset, side, sideOffset, triggerRef, children, variant, className]);
+		}, [open, align, alignOffset, side, sideOffset, triggerRef, variant, className]);
 
 		const { onMouseLeave, onMouseEnter, ...otherProps } = props;
 
@@ -420,16 +430,17 @@ const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContent
 						style={{
 							position: "fixed",
 							top: `${position.top}px`,
-							left: `${position.left}px`,
+							left: position.left !== undefined ? `${position.left}px` : undefined,
+							right: position.right !== undefined ? `${position.right}px` : undefined,
 							zIndex: 50,
 							maxHeight: "calc(90vh - 60px)",
 							overflowY: "auto",
 						}}
 						onMouseLeave={handleMouseLeave}
 						onMouseEnter={handleMouseEnterContent}
-						initial={{ y: 70, opacity: 0 }}
+						initial={{ y: 5, opacity: 0 }}
 						animate={{ y: 0, opacity: 1 }}
-						exit={{ y: 100, opacity: 0 }}
+						exit={{ y: 5, opacity: 0 }}
 						transition={{ duration: 0.3, ease: "easeInOut" }}
 						{...otherProps}
 					>
@@ -454,10 +465,11 @@ DropdownMenuLabel.displayName = "DropdownMenuLabel";
 interface DropdownMenuItemProps extends React.HTMLAttributes<HTMLDivElement> {
 	inset?: boolean;
 	disabled?: boolean;
+	asChild?: boolean;
 }
 
 const DropdownMenuItem = React.forwardRef<HTMLDivElement, DropdownMenuItemProps>(
-	({ className, inset, disabled = false, ...props }, ref) => {
+	({ className, inset, disabled = false, asChild = false, ...props }, ref) => {
 		const context = React.useContext(DropdownMenuContext);
 		if (!context) {
 			throw new Error("DropdownMenuItem must be used within a DropdownMenu");
@@ -478,15 +490,57 @@ const DropdownMenuItem = React.forwardRef<HTMLDivElement, DropdownMenuItemProps>
 			}
 		};
 
+		// Extract onClick from props to avoid passing it twice if asChild is used
 		const { onClick, ...otherProps } = props;
+
+		const _Comp = asChild ? React.Fragment : "div";
+
+		if (asChild) {
+			const child = React.Children.only(props.children) as React.ReactElement<any>;
+			// When asChild is true, we clone the child and merge props
+			return React.cloneElement(child, {
+				...otherProps, // Pass other props (like key, etc if any, though usually on parent)
+				// We need to merge refs
+				ref: (node: HTMLElement | null) => {
+					if (typeof ref === "function") {
+						ref(node as any);
+					} else if (ref) {
+						(ref as React.MutableRefObject<any>).current = node;
+					}
+					// Handle original child ref
+					const childRef = (child as any).ref;
+					if (childRef) {
+						if (typeof childRef === "function") {
+							childRef(node);
+						} else if (Object.hasOwn(childRef, "current")) {
+							(childRef as React.MutableRefObject<any>).current = node;
+						}
+					}
+				},
+				className: cn(
+					`relative flex cursor-default select-none items-center
+        rounded-sm px-2 py-1.5 text-sm outline-none
+        focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground
+        data-[disabled]:pointer-events-none data-[disabled]:opacity-50`,
+					inset && "pl-8",
+					className,
+					child.props.className,
+				),
+				onClick: (e: React.MouseEvent) => {
+					handleClick(e as any);
+					if (child.props.onClick) child.props.onClick(e);
+				},
+				"data-disabled": disabled ? "" : undefined,
+			});
+		}
 
 		return (
 			<div
 				ref={ref}
 				className={cn(
-					`relative flex cursor-default select-none items-center 
-        rounded-sm px-2 py-1.5 text-sm outline-none 
-        focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground 
+					`relative flex cursor-default select-none items-center
+        rounded-sm px-2 py-1.5 text-sm outline-none
+        focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground
         data-[disabled]:pointer-events-none data-[disabled]:opacity-50`,
 					inset && "pl-8",
 					className,

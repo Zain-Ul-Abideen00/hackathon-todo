@@ -1,129 +1,73 @@
 "use client";
-import React, { useState } from "react";
-import { type DateRange, DayPicker } from "react-day-picker";
-import "react-day-picker/dist/style.css";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 
-// --- Helper function to replace date-fns/addDays ---
-// Uses native JavaScript Date methods to add days to a given date.
-const addDays = (date: Date, days: number): Date => {
-	const result = new Date(date);
-	result.setDate(result.getDate() + days);
-	return result;
-};
+import type * as React from "react";
+import { DayPicker } from "react-day-picker";
+import { FiChevronLeft as ChevronLeft, FiChevronRight as ChevronRight } from "react-icons/fi";
 
-const Calendar = () => {
-	const [mode, setMode] = useState<"single" | "multiple" | "range">("single");
+import { cn } from "@/lib/utils";
+// We don't need the custom Select for the new simple calendar
+// import { buttonVariants } from "@/components/lightswind/button"
 
-	const today = new Date();
-	// Use our new helper function instead of the one from date-fns
-	const nextMonth = addDays(today, 30);
+export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-	const [singleDate, setSingleDate] = useState<Date | undefined>(today);
-	const [multipleDates, setMultipleDates] = useState<Date[] | undefined>([today]);
-	const [range, setRange] = useState<DateRange | undefined>({
-		from: today,
-		// Use our new helper function here as well
-		to: addDays(today, 7),
-	});
-
-	const handleModeChange = (value: "single" | "multiple" | "range") => {
-		setMode(value);
-	};
-
-	// This logic uses native Date methods, so it doesn't need to change.
-	const disabledDays = [
-		new Date(2025, 6, 25), // July 25, 2025 (Month is 0-indexed)
-		new Date(2025, 6, 26), // July 26, 2025
-		{
-			from: new Date(2025, 6, 28), // July 28, 2025
-			to: new Date(2025, 6, 30), // July 30, 2025
-		},
-		(date: Date) => date.getDay() === 0 || date.getDay() === 6, // disable weekends (Sunday and Saturday)
-	];
-
-	const commonDayPickerProps = {
-		className: "rounded-lg border p-4",
-		weekStartsOn: 1 as const, // Monday
-		// locale: enUS, // This is removed as react-day-picker defaults to English
-		defaultMonth: today,
-		fromDate: today,
-		toDate: nextMonth,
-		disabled: disabledDays,
-		showOutsideDays: true,
-		initialFocus: true,
-	};
-
+function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
 	return (
-		<div className="min-h-screen bg-background py-8 px-4">
-			<div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between mb-6">
-				<label className="text-gray-700 dark:text-gray-300 font-medium">Selection Mode:</label>
-				<Select value={mode} onValueChange={handleModeChange}>
-					<SelectTrigger className="w-[180px] dark:bg-gray-700 dark:text-white border rounded-md px-3 py-2">
-						<SelectValue placeholder="Select mode" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="single">Single</SelectItem>
-						<SelectItem value="multiple">Multiple</SelectItem>
-						<SelectItem value="range">Range</SelectItem>
-					</SelectContent>
-				</Select>
-			</div>
-
-			{mode === "single" && (
-				<DayPicker
-					mode="single"
-					selected={singleDate}
-					onSelect={setSingleDate}
-					{...commonDayPickerProps}
-				/>
-			)}
-
-			{mode === "multiple" && (
-				<DayPicker
-					mode="multiple"
-					selected={multipleDates}
-					onSelect={setMultipleDates}
-					{...commonDayPickerProps}
-				/>
-			)}
-
-			{mode === "range" && (
-				<DayPicker
-					mode="range"
-					selected={range}
-					onSelect={setRange}
-					required={false}
-					{...commonDayPickerProps}
-				/>
-			)}
-
-			<div className="mt-6 text-center text-gray-800 dark:text-gray-200">
-				{mode === "single" && singleDate && (
-					<p>
-						Selected: {/* toLocaleDateString is a native method, so this works perfectly */}
-						<strong>{singleDate.toLocaleDateString("en-US")}</strong>
-					</p>
-				)}
-				{mode === "multiple" && multipleDates && (
-					<p>
-						Selected:{" "}
-						{multipleDates.map((date) => (
-							<span key={date.toString()} className="mx-1">
-								{date.toLocaleDateString("en-US")}
-							</span>
-						))}
-					</p>
-				)}
-				{mode === "range" && range && (
-					<p>
-						From: <strong>{range.from?.toLocaleDateString("en-US") || "—"}</strong> to:{" "}
-						<strong>{range.to?.toLocaleDateString("en-US") || "—"}</strong>
-					</p>
-				)}
-			</div>
-		</div>
+		<DayPicker
+			showOutsideDays={showOutsideDays}
+			className={cn("p-3", className)}
+			classNames={{
+				months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+				month: "space-y-4",
+				caption: "flex justify-start pt-1 relative items-center pl-2", // Align text left
+				caption_label: "text-sm font-bold text-foreground",
+				nav: "ml-auto flex items-center gap-1 absolute right-2", // Position nav absolute right
+				nav_button: cn(
+					"inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground",
+					"h-7 w-7 bg-transparent p-0 opacity-70 hover:opacity-100",
+				),
+				nav_button_previous: "", // Removed absolute positioning
+				nav_button_next: "", // Removed absolute positioning
+				table: "w-full border-collapse space-y-1",
+				head_row: "flex",
+				weekdays: "flex w-full justify-between mb-2", // Fixed: Added w-full and justify-between
+				head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+				weekday: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+				row: "flex w-full mt-2 justify-between", // Fixed: Added justify-between
+				week: "flex w-full mt-2 justify-between",
+				cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+				day: cn(
+					"inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground",
+					"h-9 w-9 p-0 font-normal aria-selected:opacity-100",
+				),
+				day_range_end: "day-range-end",
+				day_selected:
+					"bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground shadow-md scale-105 transition-all text-white",
+				selected: // v9
+					"bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground shadow-md scale-105 transition-all text-white",
+				day_today: "text-primary font-bold underline decoration-primary/50 underline-offset-4",
+				today: "text-primary font-bold underline decoration-primary/50 underline-offset-4", // v9
+				day_outside:
+					"day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+				outside: // v9
+					"day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+				day_disabled: "text-muted-foreground opacity-50",
+				disabled: "text-muted-foreground opacity-50", // v9
+				day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+				range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground", // v9
+				day_hidden: "invisible",
+				hidden: "invisible", // v9
+				...classNames,
+			}}
+			components={{
+				Chevron: ({ orientation }) => {
+					const Icon = orientation === "left" ? ChevronLeft : ChevronRight;
+					return <Icon className="h-4 w-4" />;
+				},
+			}}
+			{...props}
+		/>
 	);
-};
+}
+Calendar.displayName = "Calendar";
 
 export default Calendar;
