@@ -1,11 +1,7 @@
 ---
-title: Todo Web App API
-emoji: ✅
-colorFrom: blue
-colorTo: purple
+title: Todo API
 sdk: docker
 app_port: 7860
-pinned: false
 ---
 
 # Todo Web App - Backend
