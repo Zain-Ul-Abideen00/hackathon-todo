@@ -1,8 +1,8 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
 import * as React from "react";
 import { createPortal } from "react-dom";
+import { BsX as X } from "react-icons/bs";
 import { cn } from "../../lib/utils";
 
 interface SheetContextValue {
@@ -89,11 +89,12 @@ const SheetTrigger = React.forwardRef<HTMLButtonElement, SheetTriggerProps>(
 
 			// Use the memoized `mergedRef` inside the conditional block.
 			return React.cloneElement(child, {
-				...child.props,
+				...(child as React.ReactElement<any>).props,
 				...props, // Pass down props like className, etc., to the child
 				onClick: (e: React.MouseEvent) => {
 					setOpen(true);
-					if (child.props.onClick) child.props.onClick(e);
+					if ((child as React.ReactElement<any>).props.onClick)
+						(child as React.ReactElement<any>).props.onClick(e);
 				},
 				ref: mergedRef,
 			});
@@ -124,7 +125,7 @@ SheetClose.displayName = "SheetClose";
 
 const SheetPortal = ({ children }: { children: React.ReactNode }) => {
 	const { open } = React.useContext(SheetContext) || { open: false };
-	return open ? <>{children}</> : null;
+	return open ? children : null;
 };
 SheetPortal.displayName = "SheetPortal";
 
@@ -269,8 +270,8 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
 							{...restProps}
 						>
 							{children}
-							<SheetClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
-								<X className="h-4 w-4" />
+							<SheetClose className="absolute right-4 top-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none text-foreground">
+								<X className="h-8 w-8" />
 								<span className="sr-only">Close</span>
 							</SheetClose>
 						</motion.div>

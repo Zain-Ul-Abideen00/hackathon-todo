@@ -1,6 +1,6 @@
 "use client";
-import { CircleXIcon } from "lucide-react";
 import * as React from "react";
+import { FiXCircle as CircleXIcon } from "react-icons/fi";
 import { cn } from "../../lib/utils";
 
 // --- Context and Props (with the new prop added) ---
@@ -120,10 +120,10 @@ const PopoverTrigger: React.FC<PopoverTriggerProps> = ({ onClick, asChild, child
 				{React.Children.map(children, (child) => {
 					if (React.isValidElement(child)) {
 						const childProps = {
-							...child.props,
+							...(child.props as any),
 							onClick: (e: React.MouseEvent) => {
 								handleClick(e as React.MouseEvent<HTMLElement>);
-								if (child.props.onClick) child.props.onClick(e);
+								if ((child.props as any).onClick) (child.props as any).onClick(e);
 							},
 						};
 						return React.cloneElement(child, childProps);
@@ -173,12 +173,13 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
 					)}
 					{...props}
 				>
-					<button
+					{/* Close button removed for cleaner UI - click outside to close */}
+					{/* <button
 						onClick={() => setOpen(false)}
 						className="absolute top-2 right-2 z-10 p-1 bg-gray-200/20 backdrop-blur-sm rounded-full shadow-md hover:bg-background hover:scale-110 transition-all duration-200"
 					>
 						<CircleXIcon className="w-6 h-6" />
-					</button>
+					</button> */}
 					{props.children}
 				</div>
 			</>

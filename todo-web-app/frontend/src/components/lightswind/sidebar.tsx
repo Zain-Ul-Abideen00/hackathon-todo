@@ -1,12 +1,12 @@
 "use client";
-import clsx from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { type HTMLMotionProps, motion, useInView } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
+import { FiChevronLeft as ChevronLeft, FiChevronRight as ChevronRight } from "react-icons/fi";
 import { twMerge } from "tailwind-merge";
 
 // Re-implementing the 'cn' utility function directly for self-containment
-function cn(...inputs: clsx.ClassValue[]) {
+function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
@@ -22,7 +22,7 @@ interface SidebarContextType {
 		height: number;
 	}>;
 	menuItemRefs: React.MutableRefObject<Map<string, HTMLDivElement | null>>;
-	menuRef: React.RefObject<HTMLDivElement>;
+	menuRef: React.RefObject<HTMLDivElement | null>;
 	updateIndicatorPosition: (id: string | null) => void;
 	// New: Function to notify provider when a menu item ref is added/removed
 	notifyMenuItemRefChange: () => void;
@@ -55,7 +55,7 @@ export function SidebarProvider({
 	const menuRef = React.useRef<HTMLDivElement>(null);
 
 	// NEW: State to force re-evaluation when menuItemRefs content might have changed
-	const [menuRefsVersion, setMenuRefsVersion] = React.useState(0);
+	const [_menuRefsVersion, setMenuRefsVersion] = React.useState(0);
 
 	const isControlled = controlledExpanded !== undefined;
 	const actualExpanded = isControlled ? controlledExpanded : expanded;
@@ -82,48 +82,45 @@ export function SidebarProvider({
 	}, []);
 
 	// Helper function to encapsulate indicator positioning logic
-	const updateIndicatorPosition = React.useCallback(
-		(id: string | null) => {
-			const indicator = menuRef.current?.querySelector(
-				".sidebar-menu-indicator",
-			) as HTMLElement | null;
+	const updateIndicatorPosition = React.useCallback((id: string | null) => {
+		const indicator = menuRef.current?.querySelector(
+			".sidebar-menu-indicator",
+		) as HTMLElement | null;
 
-			if (id && menuRef.current) {
-				const selectedItem = menuItemRefs.current.get(id);
-				if (selectedItem) {
-					const menuRect = menuRef.current.getBoundingClientRect();
-					const rect = selectedItem.getBoundingClientRect();
+		if (id && menuRef.current) {
+			const selectedItem = menuItemRefs.current.get(id);
+			if (selectedItem) {
+				const menuRect = menuRef.current.getBoundingClientRect();
+				const rect = selectedItem.getBoundingClientRect();
 
-					menuItemPosition.current = {
-						left: rect.left - menuRect.left,
-						width: rect.width,
-						top: rect.top - menuRect.top,
-						height: rect.height,
-					};
+				menuItemPosition.current = {
+					left: rect.left - menuRect.left,
+					width: rect.width,
+					top: rect.top - menuRect.top,
+					height: rect.height,
+				};
 
-					if (indicator) {
-						indicator.style.left = `${menuItemPosition.current.left}px`;
-						indicator.style.width = `${menuItemPosition.current.width}px`;
-						indicator.style.top = `${menuItemPosition.current.top}px`;
-						indicator.style.height = `${menuItemPosition.current.height}px`;
-						indicator.style.opacity = "1";
-					}
-				} else {
-					// If selectedItem is not found (e.g., not yet mounted or invalid ID)
-					// Ensure the indicator is hidden until the item is ready
-					if (indicator) {
-						indicator.style.opacity = "0";
-					}
+				if (indicator) {
+					indicator.style.left = `${menuItemPosition.current.left}px`;
+					indicator.style.width = `${menuItemPosition.current.width}px`;
+					indicator.style.top = `${menuItemPosition.current.top}px`;
+					indicator.style.height = `${menuItemPosition.current.height}px`;
+					indicator.style.opacity = "1";
 				}
 			} else {
-				// If no active ID, hide the indicator
+				// If selectedItem is not found (e.g., not yet mounted or invalid ID)
+				// Ensure the indicator is hidden until the item is ready
 				if (indicator) {
 					indicator.style.opacity = "0";
 				}
 			}
-		},
-		[menuItemRefs, menuRef, menuItemPosition],
-	);
+		} else {
+			// If no active ID, hide the indicator
+			if (indicator) {
+				indicator.style.opacity = "0";
+			}
+		}
+	}, []);
 
 	// Effect to set active menu item from URL
 	React.useEffect(() => {
@@ -144,7 +141,7 @@ export function SidebarProvider({
 		setActiveMenuItem(potentialMenuItemValue);
 		// No need to call updateIndicatorPosition directly here.
 		// The useLayoutEffect below, which depends on menuRefsVersion, will handle it.
-	}, [window.location.pathname, window.location.search]);
+	}, []);
 
 	// Primary useLayoutEffect for synchronous indicator updates
 	React.useLayoutEffect(() => {
@@ -154,7 +151,7 @@ export function SidebarProvider({
 		// this effect will
 		// re-run and find the newly available ref.
 		updateIndicatorPosition(activeMenuItem);
-	}, [activeMenuItem, menuRefsVersion, menuRef, updateIndicatorPosition]);
+	}, [activeMenuItem, updateIndicatorPosition]);
 
 	// Effect to re-adjust on window resize/layout changes
 	React.useEffect(() => {
@@ -350,12 +347,12 @@ export function SidebarMenu({ className, children, ...props }: SidebarMenuProps)
 		// In your SidebarMenu component's div for the indicator:
 		<div ref={menuRef} className={cn("relative", className)} {...props}>
 			<div
-				className="sidebar-menu-indicator opacity-0 absolute ease-in-out 
-      rounded-md bg-primarylw/10 dark:bg-greedy/10 border border-primarylw dark:border-greedy"
+				className="sidebar-menu-indicator opacity-0 absolute ease-in-out
+      rounded-md"
 			/>
 			<div
-				className="sidebar-menu-indicator/10 opacity-0 absolute 
-        ease-in-out 
+				className="sidebar-menu-indicator/10 opacity-0 absolute
+        ease-in-out
       rounded-md bg-primarylw/10 dark:bg-greedy/10"
 			/>{" "}
 			{/* Removed border classes */}
@@ -466,14 +463,14 @@ export function SidebarMenuButton({
 				>
 					{React.Children.map(children, (child) => {
 						if (React.isValidElement(child)) {
-							return React.cloneElement(child, {
-								...child.props,
+							return React.cloneElement(child as React.ReactElement<any>, {
+								...(child as React.ReactElement<any>).props,
 								className: cn(
 									sharedClassName,
 									"justify-center p-2",
 									"hover:bg-primary/10 hover:scale-110",
 									isActive ? "text-primary font-medium" : "",
-									child.props?.className,
+									(child as React.ReactElement<any>).props?.className,
 								),
 							});
 						}
@@ -513,14 +510,14 @@ export function SidebarMenuButton({
 			>
 				{React.Children.map(children, (child) => {
 					if (React.isValidElement(child)) {
-						return React.cloneElement(child, {
-							...child.props,
+						return React.cloneElement(child as React.ReactElement<any>, {
+							...(child as React.ReactElement<any>).props,
 							className: cn(
 								sharedClassName,
 								"justify-start gap-2",
 								"hover:bg-primary/10 hover:translate-x-1",
 								isActive ? "text-primary font-medium" : "",
-								child.props?.className,
+								(child as React.ReactElement<any>).props?.className,
 							),
 						});
 					}

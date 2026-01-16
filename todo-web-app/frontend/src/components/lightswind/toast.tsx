@@ -1,8 +1,8 @@
 "use client";
 
 import { cva } from "class-variance-authority";
-import { X } from "lucide-react";
 import * as React from "react";
+import { BsX as X } from "react-icons/bs";
 import { cn } from "../../lib/utils";
 import { Progress } from "./progress";
 
@@ -16,7 +16,7 @@ const ToastViewport = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
 		<div
 			ref={ref}
 			className={cn(
-				`fixed z-[40] flex flex-col-reverse gap-2 right-4 
+				`fixed z-[40] flex flex-col-reverse gap-2 right-4
       top-4 w-auto max-w-sm `,
 				className,
 			)}
@@ -28,7 +28,7 @@ const ToastViewport = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
 ToastViewport.displayName = "ToastViewport";
 
 const toastVariants = cva(
-	`group relative flex w-96 items-center justify-between overflow-hidden rounded-md border   p-4 pr-8 shadow-lg transition-all 
+	`group relative flex w-96 items-center justify-between overflow-hidden rounded-md border   p-4 pr-8 shadow-lg transition-all
   bg-background text-foreground`,
 	{
 		variants: {

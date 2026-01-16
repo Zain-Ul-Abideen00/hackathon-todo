@@ -122,7 +122,6 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
 					ref={ref} // Forward ref to the native input
 					checked={isChecked} // Control the checked state of the native input
 					onChange={handleChange} // Handle changes from the native input
-					aria-hidden="true" // Hide from accessibility tree as visual role="switch" is used
 					{...props} // Pass any other standard input props
 				/>
 				{/* The thumb element that visually moves */}

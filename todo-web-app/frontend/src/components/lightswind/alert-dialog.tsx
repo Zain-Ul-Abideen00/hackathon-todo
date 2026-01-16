@@ -80,8 +80,8 @@ const AlertDialogTrigger = React.forwardRef<
 			<>
 				{React.Children.map(children, (child) => {
 					if (React.isValidElement(child)) {
-						return React.cloneElement(child, {
-							...child.props,
+						return React.cloneElement(child as any, {
+							...(child.props as any),
 							ref,
 							onClick: handleClick,
 						});

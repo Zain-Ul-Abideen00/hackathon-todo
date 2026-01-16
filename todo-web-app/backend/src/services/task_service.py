@@ -36,6 +36,10 @@ async def create_task(
         user_id=user_id,
         title=task_data.title,
         description=task_data.description,
+        status=task_data.status,
+        priority=task_data.priority,
+        # Ensure due_date is offset-naive if present
+        due_date=task_data.due_date.replace(tzinfo=None) if task_data.due_date else None,
     )
     session.add(task)
     await session.commit()
@@ -64,34 +68,46 @@ async def get_task(
 
 
 async def update_task(
-    session: AsyncSession,
-    task_id: int,
-    user_id: str,
-    task_data: TaskUpdate,
+    session: AsyncSession, task_id: int, task_update: TaskUpdate, user_id: str
 ) -> Task | None:
-    """Update a task, enforcing user ownership.
+    """Update a task belonging to a specific user.
 
     Args:
         session: Database session.
-        task_id: Task ID to update.
-        user_id: Owner's user ID for isolation.
-        task_data: Fields to update.
+        task_id: ID of the task to update.
+        task_update: Fields to update.
+        user_id: ID of the user (for ownership check).
 
     Returns:
-        Updated task if found, None otherwise.
+        The updated Task, or None if not found.
     """
     task = await get_task(session, task_id, user_id)
     if not task:
         return None
 
-    update_data = task_data.model_dump(exclude_unset=True)
+    # Update only provided fields
+    update_data = task_update.model_dump(exclude_unset=True)
+
+    # Sync status <-> completed if one changed
+    if "status" in update_data:
+        update_data["completed"] = update_data["status"] == "completed"
+    elif "completed" in update_data:
+        update_data["status"] = "completed" if update_data["completed"] else "todo"
+
+    # Normalize due_date if present
+    if "due_date" in update_data and update_data["due_date"]:
+        update_data["due_date"] = update_data["due_date"].replace(tzinfo=None)
+
     for key, value in update_data.items():
         setattr(task, key, value)
 
+    # Update timestamp
     task.updated_at = utc_now()
+
     session.add(task)
     await session.commit()
     await session.refresh(task)
+
     return task
 
 

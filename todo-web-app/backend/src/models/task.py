@@ -33,7 +33,10 @@ class Task(SQLModel, table=True):
     user_id: str = Field(index=True, max_length=255)
     title: str = Field(max_length=200)
     description: str | None = Field(default=None, max_length=1000)
-    completed: bool = Field(default=False, index=True)
+    completed: bool = Field(default=False, index=True)  # Deprecated in favor of status
+    status: str = Field(default="todo", index=True, max_length=20)
+    priority: str = Field(default="medium", index=True, max_length=20)
+    due_date: datetime | None = Field(default=None, index=True)
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 
@@ -43,6 +46,9 @@ class TaskCreate(SQLModel):
 
     title: str = Field(max_length=200)
     description: str | None = Field(default=None, max_length=1000)
+    status: str = Field(default="todo", max_length=20)
+    priority: str = Field(default="medium", max_length=20)
+    due_date: datetime | None = None
 
 
 class TaskUpdate(SQLModel):
@@ -51,3 +57,6 @@ class TaskUpdate(SQLModel):
     title: str | None = Field(default=None, max_length=200)
     description: str | None = Field(default=None, max_length=1000)
     completed: bool | None = None
+    status: str | None = Field(default=None, max_length=20)
+    priority: str | None = Field(default=None, max_length=20)
+    due_date: datetime | None = None

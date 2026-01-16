@@ -1,7 +1,7 @@
 "use client";
 
-import { Check } from "lucide-react";
 import * as React from "react";
+import { FiCheck as Check } from "react-icons/fi";
 import { cn } from "../../lib/utils";
 
 export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {

@@ -20,7 +20,7 @@ export function generateUniqueId(prefix = "id") {
 // Utility function to truncate text
 export function truncateText(text, maxLength) {
 	if (text.length <= maxLength) return text;
-	return text.substring(0, maxLength) + "...";
+	return `${text.substring(0, maxLength)}...`;
 }
 // Utility function to format date
 export function formatDate(date, options) {

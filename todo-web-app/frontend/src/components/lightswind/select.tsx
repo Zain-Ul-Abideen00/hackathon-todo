@@ -1,8 +1,8 @@
 "use client";
 import { AnimatePresence, type HTMLMotionProps, motion } from "framer-motion";
-import { Check, ChevronDown } from "lucide-react";
 import * as React from "react";
 import { createPortal } from "react-dom";
+import { FiCheck as Check, FiChevronDown as ChevronDown } from "react-icons/fi";
 import { cn } from "../../lib/utils"; // Assuming you have this utility function
 
 interface SelectContextType {
@@ -10,7 +10,7 @@ interface SelectContextType {
 	onValueChange: (value: string) => void;
 	open: boolean;
 	setOpen: (open: boolean) => void;
-	triggerRef: React.RefObject<HTMLButtonElement>;
+	triggerRef: React.RefObject<HTMLButtonElement | null>;
 	searchQuery: string;
 	setSearchQuery: (query: string) => void;
 }
@@ -133,12 +133,16 @@ const SelectValue = React.forwardRef<HTMLSpanElement, SelectValueProps>(
 				if (displayValue) return;
 
 				// Check if it's a SelectItem
-				if ((node.type as any).displayName === "SelectItem" && node.props.value === context.value) {
-					displayValue = node.props.children;
+				const element = node as React.ReactElement<any>;
+				if (
+					(element.type as any).displayName === "SelectItem" &&
+					element.props.value === context.value
+				) {
+					displayValue = element.props.children;
 				}
 				// Check if it's a SelectGroup and recurse
-				else if ((node.type as any).displayName === "SelectGroup") {
-					findDisplayValue(node.props.children);
+				else if ((element.type as any).displayName === "SelectGroup") {
+					findDisplayValue(element.props.children);
 				}
 			});
 		};
@@ -197,8 +201,8 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
 						onChange={(e) => setSearchQuery(e.target.value)}
 						onClick={(e) => e.stopPropagation()}
 						placeholder="Search..."
-						className="w-full bg-transparent p-0 text-sm 
-    border-none outline-none ring-0 focus:outline-none focus:ring-0 
+						className="w-full bg-transparent p-0 text-sm
+    border-none outline-none ring-0 focus:outline-none focus:ring-0
     active:outline-none active:ring-0"
 						style={{ boxShadow: "none" }} // ensure Chrome removes highlight
 					/>
@@ -377,8 +381,11 @@ const SelectContent = React.forwardRef<HTMLDivElement, SelectContentProps>(
 				if (typeof child === "string" || typeof child === "number") {
 					return child.toString();
 				}
-				if (React.isValidElement(child) && child.props.children) {
-					return React.Children.map(child.props.children, getChildText).join("");
+				if (React.isValidElement(child) && (child as React.ReactElement<any>).props.children) {
+					return (
+						React.Children.map((child as React.ReactElement<any>).props.children, getChildText) ||
+						[]
+					).join("");
 				}
 				return "";
 			};
@@ -389,20 +396,22 @@ const SelectContent = React.forwardRef<HTMLDivElement, SelectContentProps>(
 				}
 
 				if ((child.type as any).displayName === "SelectGroup") {
-					const matchedItems = React.Children.toArray(child.props.children).filter((groupChild) => {
+					const matchedItems = React.Children.toArray(
+						(child as React.ReactElement<any>).props.children,
+					).filter((groupChild) => {
 						if (
 							React.isValidElement(groupChild) &&
 							(groupChild.type as any).displayName === "SelectItem"
 						) {
-							const text = getChildText(groupChild.props.children);
+							const text = getChildText((groupChild as React.ReactElement<any>).props.children);
 							return text.toLowerCase().includes(lowerCaseQuery);
 						}
 						return false;
 					});
 
 					if (matchedItems.length > 0) {
-						return React.cloneElement(child, {
-							...child.props,
+						return React.cloneElement(child as React.ReactElement<any>, {
+							...(child as React.ReactElement<any>).props,
 							children: matchedItems,
 						});
 					}
@@ -410,7 +419,7 @@ const SelectContent = React.forwardRef<HTMLDivElement, SelectContentProps>(
 				}
 
 				if ((child.type as any).displayName === "SelectItem") {
-					const text = getChildText(child.props.children);
+					const text = getChildText((child as React.ReactElement<any>).props.children);
 					return text.toLowerCase().includes(lowerCaseQuery) ? child : null;
 				}
 

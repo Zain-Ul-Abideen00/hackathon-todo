@@ -1,8 +1,8 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { CiCloudMoon as Moon, CiCloudSun as Sun } from "react-icons/ci";
 import { cn } from "@/lib/utils";
 
 // 1. Define the possible animation types (UPDATED to include all demo types)
@@ -33,7 +33,7 @@ interface ToggleThemeProps extends React.ComponentPropsWithoutRef<"button"> {
 // 3. Component and export are renamed
 export const ToggleTheme = ({
 	className,
-	duration = 400,
+	duration = 1000,
 	animationType = "circle-spread",
 	...props
 }: ToggleThemeProps) => {
@@ -264,8 +264,6 @@ export const ToggleTheme = ({
 					},
 				);
 				break;
-
-			case "none":
 			default:
 				// No custom animation runs
 				break;
@@ -278,13 +276,13 @@ export const ToggleTheme = ({
 				ref={buttonRef}
 				onClick={toggleTheme}
 				className={cn(
-					"p-2 rounded-full transition-colors duration-300",
-					isDark ? "hover:text-amber-400" : "hover:text-blue-500",
+					"rounded-lg p-1 text-muted-foreground hover:scale-110 transition-all duration-500 cursor-pointer hover:bg-muted hover:text-accent",
+					isDark ? "hover:text-primary" : "hover:text-primary",
 					className,
 				)}
 				{...props}
 			>
-				{isDark ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+				{isDark ? <Sun className="h-8 w-8" /> : <Moon className="h-8 w-8" />}
 			</button>
 
 			{/* This inline <style> block is necessary to override the default

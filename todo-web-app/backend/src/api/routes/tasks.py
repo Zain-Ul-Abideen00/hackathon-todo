@@ -183,7 +183,9 @@ async def update_task(
     """
     validate_user_access(user_id, current_user)
 
-    task = await task_service.update_task(session, task_id, user_id, task_data)
+    task = await task_service.update_task(
+        session=session, task_id=task_id, task_update=task_data, user_id=user_id
+    )
     if not task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

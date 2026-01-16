@@ -5,5 +5,4 @@
  */
 
 export { SignUpForm } from "./SignUpForm";
-export { SignInForm } from "./SignInForm";
 export { UserButton } from "./UserButton";

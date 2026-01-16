@@ -1,7 +1,7 @@
 "use client";
 import { AnimatePresence, type HTMLMotionProps, motion } from "framer-motion"; // Import motion, AnimatePresence, and HTMLMotionProps
-import { X } from "lucide-react";
 import * as React from "react";
+import { BsX as X } from "react-icons/bs";
 import { cn } from "../../lib/utils";
 
 interface DialogContextType {
@@ -80,7 +80,7 @@ const DialogTrigger = React.forwardRef<
 				{React.Children.map(children, (child) => {
 					if (React.isValidElement(child)) {
 						return React.cloneElement(child, {
-							...child.props,
+							...(child.props as any),
 						});
 					}
 					return child;

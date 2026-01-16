@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { GlobalPageLoader } from "@/components/layout/GlobalPageLoader";
+import { QueryProvider } from "@/components/providers/QueryProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { ToastProvider } from "@/components/providers/ToastProvider";
+import "@/app/globals.css";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -13,8 +17,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "Todo App - Manage Your Tasks",
-	description: "A full-stack todo application with authentication",
+	title: "Todo App - Manage Your Tasks Effortlessly",
+	description:
+		"A beautiful, production-ready todo application with task management, calendar integration, and team collaboration features.",
+	keywords: ["todo", "task management", "productivity", "organization"],
+	authors: [{ name: "Todo App Team" }],
+	openGraph: {
+		title: "Todo App - Manage Your Tasks Effortlessly",
+		description:
+			"A beautiful, production-ready todo application with task management, calendar integration, and team collaboration features.",
+		type: "website",
+	},
 };
 
 export default function RootLayout({
@@ -23,8 +36,23 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
-			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+		<html lang="en" suppressHydrationWarning>
+			<body
+				className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-background font-sans text-foreground antialiased`}
+			>
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="system"
+					enableSystem
+					disableTransitionOnChange
+				>
+					<QueryProvider>
+						<GlobalPageLoader />
+						{children}
+						<ToastProvider />
+					</QueryProvider>
+				</ThemeProvider>
+			</body>
 		</html>
 	);
 }

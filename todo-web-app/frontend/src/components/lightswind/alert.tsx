@@ -1,5 +1,11 @@
-import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
 import * as React from "react";
+import { BsX as X } from "react-icons/bs";
+import {
+	FiAlertCircle as AlertCircle,
+	FiAlertTriangle as AlertTriangle,
+	FiCheckCircle as CheckCircle,
+	FiInfo as Info,
+} from "react-icons/fi";
 import { cn } from "../../lib/utils";
 
 const alertVariants = {
@@ -80,10 +86,10 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 				{children}
 				{dismissible && (
 					<button
-						className="absolute top-4 right-4 rounded-full p-1 
-            text-foreground/70 opacity-70 
-            transition-opacity hover:opacity-100 
-            focus:outline-none focus:ring-2 focus:ring-ring 
+						className="absolute top-4 right-4 rounded-full p-1
+            text-foreground/70 opacity-70
+            transition-opacity hover:opacity-100
+            focus:outline-none focus:ring-2 focus:ring-ring
             focus:ring-offset-2"
 						onClick={handleDismiss}
 						aria-label="Dismiss alert"

@@ -1,6 +1,6 @@
 "use client";
 import { animate, motion, useMotionValue, useTransform } from "framer-motion";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
 
 // Helper function to format the number
@@ -109,7 +109,15 @@ export function CountUp({
 		if (containerRef.current) observer.observe(containerRef.current);
 
 		return () => observer.disconnect();
-	}, [value, triggerOnView, hasAnimated]);
+	}, [
+		value,
+		triggerOnView,
+		hasAnimated,
+		animationConfig,
+		count.get,
+		count.set,
+		onAnimationComplete,
+	]);
 
 	useEffect(() => {
 		if (hasAnimated || !triggerOnView) {
@@ -119,7 +127,15 @@ export function CountUp({
 				onComplete: onAnimationComplete,
 			});
 		}
-	}, [value, animationConfig, hasAnimated, triggerOnView, onAnimationComplete]);
+	}, [
+		value,
+		animationConfig,
+		hasAnimated,
+		triggerOnView,
+		onAnimationComplete,
+		count.get,
+		count.set,
+	]);
 
 	const colorClass = colorScheme === "custom" && customColor ? "" : colorSchemes[colorScheme];
 

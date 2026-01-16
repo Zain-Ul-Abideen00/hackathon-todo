@@ -1,5 +1,5 @@
-import { ChevronRight, MoreHorizontal } from "lucide-react";
 import * as React from "react";
+import { FiChevronRight as ChevronRight, FiMoreHorizontal as MoreHorizontal } from "react-icons/fi";
 import { cn } from "../../lib/utils";
 
 const Breadcrumb = React.forwardRef<

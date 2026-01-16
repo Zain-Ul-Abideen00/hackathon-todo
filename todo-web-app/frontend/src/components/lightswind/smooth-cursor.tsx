@@ -123,9 +123,9 @@ export function SmoothCursor({
 	onCursorLeave,
 	disabled = false,
 }: SmoothCursorProps) {
-	const [isMoving, setIsMoving] = useState(false);
+	const [_isMoving, setIsMoving] = useState(false);
 	const [isVisible, setIsVisible] = useState(true);
-	const [isClicking, setIsClicking] = useState(false);
+	const [_isClicking, setIsClicking] = useState(false);
 	const [trail, setTrail] = useState<Position[]>([]);
 
 	const lastMousePos = useRef<Position>({ x: 0, y: 0 });
@@ -347,7 +347,7 @@ export function SmoothCursor({
 					zIndex: 100,
 					pointerEvents: "none",
 					willChange: "transform",
-					filter: glowEffect ? "drop-shadow(0 0 10px " + color + "40)" : "none", // String concatenation
+					filter: glowEffect ? `drop-shadow(0 0 10px ${color}40)` : "none", // String concatenation
 				}}
 				initial={{ scale: 0, opacity: 0 }}
 				animate={{ scale: 1, opacity: 1 }}
