@@ -10,10 +10,43 @@ Reference: .agent/skills/mcp-builder/SKILL.md
 from typing import Literal
 
 from agents import function_tool, RunContextWrapper
+from chatkit.agents import AgentContext
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.models import TaskCreate, TaskUpdate
 from src.services import task_service
+
+
+def _extract_context(ctx: RunContextWrapper) -> tuple[str | None, AsyncSession | None]:
+    """Extract user_id and session from RunContextWrapper.
+
+    Handles both AgentContext (via request_context) and raw dict contexts.
+    """
+    context = ctx.context
+
+    # Debug logging
+    print(f"[TOOL DEBUG] ctx.context type: {type(context)}")
+
+    # If context is AgentContext, access request_context
+    if hasattr(context, 'request_context'):
+        print("[TOOL DEBUG] Found AgentContext, using request_context")
+        request_context = context.request_context
+        if isinstance(request_context, dict):
+            user_id = request_context.get("user_id")
+            session = request_context.get("session")
+            print(f"[TOOL DEBUG] user_id: {user_id}, session: {session is not None}")
+            return user_id, session
+
+    # If context is a plain dict (direct usage)
+    if isinstance(context, dict):
+        print("[TOOL DEBUG] Found dict context directly")
+        user_id = context.get("user_id")
+        session = context.get("session")
+        print(f"[TOOL DEBUG] user_id: {user_id}, session: {session is not None}")
+        return user_id, session
+
+    print(f"[TOOL DEBUG] Unknown context type: {type(context)}")
+    return None, None
 
 
 @function_tool
@@ -28,18 +61,22 @@ async def add_task(
         title: Task title (required)
         description: Optional task description
     """
-    user_id = ctx.context.get("user_id")
-    session: AsyncSession = ctx.context.get("session")
+    print(f"[TOOL] add_task called with title='{title}'")
+
+    user_id, session = _extract_context(ctx)
 
     if not user_id:
+        print("[TOOL] ERROR: No user_id found")
         return {"error": "Authentication required. Please log in to create tasks."}
 
     if not session:
+        print("[TOOL] ERROR: No session found")
         return {"error": "Database session unavailable. Please try again."}
 
     try:
         task_data = TaskCreate(title=title, description=description or None)
         task = await task_service.create_task(session, task_data, user_id)
+        print(f"[TOOL] SUCCESS: Created task id={task.id}, title='{task.title}'")
         return {
             "task_id": task.id,
             "status": "created",
@@ -47,6 +84,7 @@ async def add_task(
             "message": f"Created task: {task.title}",
         }
     except Exception as e:
+        print(f"[TOOL] EXCEPTION: {e}")
         return {"error": f"Failed to create task: {str(e)}"}
 
 
@@ -60,8 +98,9 @@ async def list_tasks(
     Args:
         status: Filter by status - "all", "pending", or "completed"
     """
-    user_id = ctx.context.get("user_id")
-    session: AsyncSession = ctx.context.get("session")
+    print(f"[TOOL] list_tasks called with status='{status}'")
+
+    user_id, session = _extract_context(ctx)
 
     if not user_id:
         return {"error": "Authentication required. Please log in to view tasks."}
@@ -105,8 +144,9 @@ async def complete_task(
     Args:
         task_id: ID of the task to complete
     """
-    user_id = ctx.context.get("user_id")
-    session: AsyncSession = ctx.context.get("session")
+    print(f"[TOOL] complete_task called with task_id={task_id}")
+
+    user_id, session = _extract_context(ctx)
 
     if not user_id:
         return {"error": "Authentication required. Please log in to complete tasks."}
@@ -140,8 +180,9 @@ async def delete_task(
     Args:
         task_id: ID of the task to delete
     """
-    user_id = ctx.context.get("user_id")
-    session: AsyncSession = ctx.context.get("session")
+    print(f"[TOOL] delete_task called with task_id={task_id}")
+
+    user_id, session = _extract_context(ctx)
 
     if not user_id:
         return {"error": "Authentication required. Please log in to delete tasks."}
@@ -184,8 +225,9 @@ async def update_task(
         title: New title (optional)
         description: New description (optional)
     """
-    user_id = ctx.context.get("user_id")
-    session: AsyncSession = ctx.context.get("session")
+    print(f"[TOOL] update_task called with task_id={task_id}")
+
+    user_id, session = _extract_context(ctx)
 
     if not user_id:
         return {"error": "Authentication required. Please log in to update tasks."}

@@ -25,11 +25,41 @@ SECRET_KEY = os.getenv("BETTER_AUTH_SECRET")
 ALGORITHM = "HS256"
 
 
+def decode_token_string(token: str) -> dict[str, Any]:
+    """
+    Verify and decode a raw JWT token string.
+
+    Use this function for direct token verification outside of FastAPI
+    dependency injection (e.g., in optional auth scenarios).
+
+    Args:
+        token: Raw JWT token string (without "Bearer " prefix)
+
+    Returns:
+        dict: Decoded JWT payload containing user claims
+
+    Raises:
+        ValueError: If token is invalid or BETTER_AUTH_SECRET not configured
+    """
+    if not SECRET_KEY:
+        raise ValueError("BETTER_AUTH_SECRET not configured")
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+        if not payload.get("sub"):
+            raise ValueError("Token missing subject claim")
+
+        return payload
+    except JWTError as e:
+        raise ValueError(f"Invalid token: {e}")
+
+
 def verify_token(
     credentials: HTTPAuthorizationCredentials = Security(security),
 ) -> dict[str, Any]:
     """
-    Verify JWT token from Authorization header.
+    Verify JWT token from Authorization header (FastAPI Dependency).
 
     This happens locally (CPU only), no network call needed.
     Stateless verification using shared secret.

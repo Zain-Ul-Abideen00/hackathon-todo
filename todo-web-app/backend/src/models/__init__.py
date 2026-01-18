@@ -7,10 +7,13 @@ Exports:
     - TaskUpdate: Schema for updating tasks
 """
 
+from .chatkit import ChatKitItem, ChatKitThread
 from .task import Task, TaskCreate, TaskUpdate
 
 __all__ = [
     "Task",
     "TaskCreate",
     "TaskUpdate",
+    "ChatKitThread",
+    "ChatKitItem",
 ]
