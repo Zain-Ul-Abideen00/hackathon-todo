@@ -151,7 +151,7 @@ indent-style = "space"
 |----------|-------------|---------|
 | `NEXT_PUBLIC_API_URL` | Backend API base URL | `http://localhost:8000` |
 | `BETTER_AUTH_SECRET` | Shared JWT secret | `your-secret-min-32-characters-here` |
-| `BETTER_AUTH_URL` | Frontend URL for auth | `http://localhost:3000` |
+| `NEXT_PUBLIC_BETTER_AUTH_URL` | Frontend URL for auth | `http://localhost:3000` |
 
 ---
 

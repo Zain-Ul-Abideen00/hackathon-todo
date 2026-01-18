@@ -55,7 +55,7 @@ Create `todo-web-app/frontend/.env.local`:
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:8000
 BETTER_AUTH_SECRET=your-development-secret-min-32-characters
-BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
 ```
 
 ### Backend (.env)

@@ -46,7 +46,7 @@ If signup is failing, check the following in order:
 1.  **Environment Variables**:
     -   Ensure `BETTER_AUTH_SECRET` is set and **identical** in both Frontend and Backend `.env` files.
     -   Ensure `DATABASE_URL` is set in Frontend `.env` (it needs direct DB access).
-    -   Ensure `BETTER_AUTH_URL` is set to your frontend URL (e.g., `http://localhost:3000`).
+    -   Ensure `NEXT_PUBLIC_BETTER_AUTH_URL` is set to your frontend URL (e.g., `http://localhost:3000`).
 
 2.  **Database Migration**:
     -   Better Auth needs specific tables (`user`, `session`, `account`, `verification`).
