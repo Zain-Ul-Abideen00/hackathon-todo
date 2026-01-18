@@ -11,6 +11,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.70.0(react@19.2.3))
+      '@openai/chatkit-react':
+        specifier: ^1.4.2
+        version: 1.4.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@tanstack/react-query':
         specifier: ^5.90.16
         version: 5.90.16(react@19.2.3)
@@ -697,6 +700,15 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
+
+  '@openai/chatkit-react@1.4.2':
+    resolution: {integrity: sha512-qEA5Jw9+Fnc6H7X5RmhDUR7+bEW31D5HWN2yGSgiwBVtfML74uIlNuJxCfD39fXWDbHneDR6QJJtzMhalWD7Yg==}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+
+  '@openai/chatkit@1.4.0':
+    resolution: {integrity: sha512-MqNaK8EHKO5bf0flekY/JNjX55eh7Ae0Yt8Y3T9HwSN0E1ULkk5PYn2bM7Qllltb8FnO5nXNc6bD9yqrIfNlQA==}
 
   '@prisma/client@5.22.0':
     resolution: {integrity: sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA==}
@@ -3803,6 +3815,14 @@ snapshots:
       fastq: 1.20.1
 
   '@nolyfill/is-core-module@1.0.39': {}
+
+  '@openai/chatkit-react@1.4.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+    dependencies:
+      '@openai/chatkit': 1.4.0
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+
+  '@openai/chatkit@1.4.0': {}
 
   '@prisma/client@5.22.0': {}
 

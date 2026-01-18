@@ -12,11 +12,13 @@ import json
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, Request
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse, Response
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from src.api.deps import get_session
-from src.auth.jwt import verify_token
+from src.auth.dependencies import get_current_user
+from src.auth.jwt import decode_token_string
+from src.db.connection import engine
+from chatkit.server import StreamingResult
 
 from .server import server
 
@@ -34,7 +36,11 @@ async def get_current_user_optional(
     for unauthenticated requests. Chat endpoint is accessible
     without auth, but task operations require authentication.
     """
+    print(f"[AUTH] get_current_user_optional called")
+    print(f"[AUTH] authorization header: {authorization[:50] if authorization else 'None'}...")
+
     if not authorization:
+        print("[AUTH] No authorization header, returning None")
         return None
 
     # Extract token from "Bearer <token>" format
@@ -43,17 +49,25 @@ async def get_current_user_optional(
     else:
         token = authorization
 
+    print(f"[AUTH] Token extracted (first 20 chars): {token[:20] if token else 'None'}...")
+
+    # Handle implicit/frontend usage where "null" might be sent as string
+    if token == "null" or token == "undefined":
+        print("[AUTH] Token is 'null' or 'undefined', returning None")
+        return None
+
     try:
-        payload = verify_token(token)
+        payload = decode_token_string(token)
+        print(f"[AUTH] Token verified successfully: {payload}")
         return payload
-    except Exception:
+    except Exception as e:
+        print(f"[AUTH] Token verification failed: {e}")
         return None
 
 
 @router.post("/chat", response_model=None)
 async def chat_endpoint(
     request: Request,
-    session: AsyncSession = Depends(get_session),
     current_user: dict | None = Depends(get_current_user_optional),
 ):
     """ChatKit protocol endpoint for AI-powered chat.
@@ -65,6 +79,7 @@ async def chat_endpoint(
     - messages.list: List thread messages
 
     Authentication is optional for chat, but required for task operations.
+    Includes manual session management to support streaming responses.
     """
     # Read request body
     body = await request.body()
@@ -80,14 +95,10 @@ async def chat_endpoint(
             },
         )
 
-    # Build context for tools
-    context = {
-        "user_id": current_user.get("sub") if current_user else None,
-        "session": session,
-    }
+    user_id = current_user.get("sub") if current_user else None
 
     try:
-        # Parse request to determine type
+        # Pre-parse to determine handling strategy
         try:
             request_data = json.loads(body)
         except json.JSONDecodeError:
@@ -97,79 +108,62 @@ async def chat_endpoint(
             )
 
         request_type = request_data.get("type", "")
-        params = request_data.get("params", {})
 
-        # Handle different ChatKit request types
-        if request_type == "threads.list":
-            threads = await server.store.list_threads(context.get("user_id") or "anonymous")
-            return JSONResponse(content={"threads": threads})
+        # 1. STREAMING REQUESTS (messages.create)
+        # ---------------------------------------------------------------------
+        if request_type == "messages.create":
 
-        elif request_type == "threads.get":
-            thread_id = params.get("thread_id")
-            thread = await server.store.get_thread(thread_id)
-            if not thread:
-                return JSONResponse(
-                    status_code=404,
-                    content={"error": f"Thread {thread_id} not found"},
-                )
-            return JSONResponse(content={"thread": thread})
+            async def stream_generator():
+                # Manually manage session lifecycle to ensure it stays open during stream
+                async with AsyncSession(engine) as session:
+                    context = {
+                        "user_id": user_id,
+                        "session": session,
+                    }
 
-        elif request_type == "messages.list":
-            thread_id = params.get("thread_id")
-            messages = await server.store.list_messages(thread_id)
-            return JSONResponse(content={"messages": messages})
+                    # Process using standard server.process which calls respond->agent
+                    # ChatKit expects raw bytes, not decoded string
+                    result = await server.process(body, context)
 
-        elif request_type == "messages.create":
-            thread_id = params.get("thread_id")
-            content = params.get("content", "")
-
-            if not content:
-                return JSONResponse(
-                    status_code=400,
-                    content={"error": "Message content is required"},
-                )
-
-            # Get or create thread
-            thread = await server.store.get_thread(thread_id)
-            if not thread:
-                thread = await server.store.create_thread(
-                    thread_id,
-                    user_id=context.get("user_id") or "anonymous",
-                )
-
-            # Store user message
-            await server.store.add_message(thread_id, {"role": "user", "content": content})
-
-            # Generate streaming response
-            async def stream_response():
-                full_response = ""
-                async for chunk in server.respond(thread, content, context):
-                    full_response += chunk
-                    # SSE format
-                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
-
-                # Store assistant response
-                await server.store.add_message(
-                    thread_id, {"role": "assistant", "content": full_response}
-                )
-                yield f"data: {json.dumps({'done': True})}\n\n"
+                    if isinstance(result, StreamingResult):
+                        async for chunk in result:
+                            yield chunk
+                    else:
+                        # Fallback if somehow messages.create returns non-stream results
+                        # result.json is already bytes, yield directly
+                        yield result.json
 
             return StreamingResponse(
-                stream_response(),
+                stream_generator(),
                 media_type="text/event-stream",
                 headers={
                     "Cache-Control": "no-cache",
                     "Connection": "keep-alive",
+                    "X-Accel-Buffering": "no", # Nginx no-buffer
                 },
             )
 
+        # 2. STANDARD REQUESTS (threads.list, history, etc)
+        # ---------------------------------------------------------------------
         else:
-            return JSONResponse(
-                status_code=400,
-                content={"error": f"Unknown request type: {request_type}"},
-            )
+            async with AsyncSession(engine) as session:
+                context = {
+                    "user_id": user_id,
+                    "session": session,
+                }
+
+                # ChatKit expects raw bytes, not decoded string
+                result = await server.process(body, context)
+
+                if isinstance(result, StreamingResult):
+                     # Should not happen for non-streaming types, but safe fallback
+                     return StreamingResponse(result, media_type="text/event-stream")
+
+                # NonStreamingResult.json is already serialized bytes, use Response not JSONResponse
+                return Response(content=result.json, media_type="application/json")
 
     except Exception as e:
+        print(f"[Chat Endpoint Error]: {str(e)}")
         return JSONResponse(
             status_code=500,
             content={
@@ -177,6 +171,3 @@ async def chat_endpoint(
                 "message": str(e),
             },
         )
-
-
-__all__ = ["router"]
