@@ -54,7 +54,7 @@ Ensure `.env.local` has:
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:8000
 BETTER_AUTH_SECRET=your-shared-secret-min-32-chars
-BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
 ```
 
 ### 3. Verify Setup

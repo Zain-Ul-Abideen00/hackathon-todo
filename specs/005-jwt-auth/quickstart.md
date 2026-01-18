@@ -33,7 +33,7 @@ pnpm add better-auth jose
 ```bash
 # .env.local
 BETTER_AUTH_SECRET=your-generated-secret-here
-BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
 ```
 
 ### Create Auth Configuration

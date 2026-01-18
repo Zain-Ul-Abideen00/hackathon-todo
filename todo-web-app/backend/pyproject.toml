@@ -14,6 +14,10 @@ dependencies = [
     "python-jose[cryptography]>=3.3.0",
     "httpx>=0.28.0",
     "slowapi>=0.1.9",
+    # ChatKit + AI Agent dependencies (Phase 3)
+    "openai-chatkit",
+    "openai-agents[litellm]",
+    "mcp",
 ]
 
 [project.optional-dependencies]

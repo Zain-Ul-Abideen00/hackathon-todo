@@ -159,7 +159,7 @@ frontend/
 
    # Better Auth
    BETTER_AUTH_SECRET="your-secret-min-32-chars"  # Generate with: openssl rand -base64 32
-   BETTER_AUTH_URL="http://localhost:3000"
+   NEXT_PUBLIC_BETTER_AUTH_URL="http://localhost:3000"
    ```
 
 4. **Run database migrations**

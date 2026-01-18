@@ -301,7 +301,7 @@ python-jose = { extras = ["cryptography"], version = ">=3.3.0" }
 
 ```bash
 BETTER_AUTH_SECRET=your-shared-secret-min-32-characters
-BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
 ```
 
 ### Backend (.env)

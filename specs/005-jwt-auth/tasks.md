@@ -26,7 +26,7 @@
 - [x] T001 Install frontend auth dependencies: `pnpm add better-auth jose` in `todo-web-app/frontend/`
 - [x] T002 Install backend auth dependency: `uv add "python-jose[cryptography]"` in `todo-web-app/backend/`
 - [x] T003 Add `BETTER_AUTH_SECRET` to `todo-web-app/frontend/.env.local`
-- [x] T004 Add `BETTER_AUTH_URL=http://localhost:3000` to `todo-web-app/frontend/.env.local`
+- [x] T004 Add `NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000` to `todo-web-app/frontend/.env.local`
 - [x] T005 Add `BETTER_AUTH_SECRET` to `todo-web-app/backend/.env` (must match frontend)
 
 ---

@@ -27,6 +27,7 @@ from slowapi.errors import RateLimitExceeded
 from src.api.deps import limiter
 from src.api.routes import health
 from src.api.routes.tasks import router as tasks_router
+from src.chat.routes import router as chat_router
 
 
 @asynccontextmanager
@@ -122,6 +123,7 @@ async def validation_exception_handler(request: Request, exc: ValidationError) -
 # Include routers
 app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(tasks_router, prefix="/api", tags=["Tasks"])
+app.include_router(chat_router, prefix="/api", tags=["Chat"])
 
 
 @app.get("/")
