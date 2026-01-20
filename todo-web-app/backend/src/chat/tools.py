@@ -11,6 +11,7 @@ from typing import Literal
 
 from agents import function_tool, RunContextWrapper
 from chatkit.agents import AgentContext
+from chatkit.types import ProgressUpdateEvent
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.models import TaskCreate, TaskUpdate
@@ -25,28 +26,29 @@ def _extract_context(ctx: RunContextWrapper) -> tuple[str | None, AsyncSession |
     context = ctx.context
 
     # Debug logging
-    print(f"[TOOL DEBUG] ctx.context type: {type(context)}")
+    # print(f"[TOOL DEBUG] ctx.context type: {type(context)}")
 
     # If context is AgentContext, access request_context
     if hasattr(context, 'request_context'):
-        print("[TOOL DEBUG] Found AgentContext, using request_context")
+        # print("[TOOL DEBUG] Found AgentContext, using request_context")
         request_context = context.request_context
         if isinstance(request_context, dict):
             user_id = request_context.get("user_id")
             session = request_context.get("session")
-            print(f"[TOOL DEBUG] user_id: {user_id}, session: {session is not None}")
+            # print(f"[TOOL DEBUG] user_id: {user_id}, session: {session is not None}")
             return user_id, session
 
     # If context is a plain dict (direct usage)
     if isinstance(context, dict):
-        print("[TOOL DEBUG] Found dict context directly")
+        # print("[TOOL DEBUG] Found dict context directly")
         user_id = context.get("user_id")
         session = context.get("session")
-        print(f"[TOOL DEBUG] user_id: {user_id}, session: {session is not None}")
+        # print(f"[TOOL DEBUG] user_id: {user_id}, session: {session is not None}")
         return user_id, session
 
-    print(f"[TOOL DEBUG] Unknown context type: {type(context)}")
+    # print(f"[TOOL DEBUG] Unknown context type: {type(context)}")
     return None, None
+
 
 
 @function_tool
@@ -62,6 +64,9 @@ async def add_task(
         description: Optional task description
     """
     print(f"[TOOL] add_task called with title='{title}'")
+
+    # Stream progress update with write icon
+    await ctx.context.stream(ProgressUpdateEvent(icon="write", text="Creating task..."))
 
     user_id, session = _extract_context(ctx)
 
@@ -99,6 +104,9 @@ async def list_tasks(
         status: Filter by status - "all", "pending", or "completed"
     """
     print(f"[TOOL] list_tasks called with status='{status}'")
+
+    # Stream progress update with book-open icon
+    await ctx.context.stream(ProgressUpdateEvent(icon="book-open", text="Fetching your tasks..."))
 
     user_id, session = _extract_context(ctx)
 
@@ -146,6 +154,9 @@ async def complete_task(
     """
     print(f"[TOOL] complete_task called with task_id={task_id}")
 
+    # Stream progress update with check icon
+    await ctx.context.stream(ProgressUpdateEvent(icon="check", text="Marking task complete..."))
+
     user_id, session = _extract_context(ctx)
 
     if not user_id:
@@ -181,6 +192,9 @@ async def delete_task(
         task_id: ID of the task to delete
     """
     print(f"[TOOL] delete_task called with task_id={task_id}")
+
+    # Stream progress update with atom icon
+    await ctx.context.stream(ProgressUpdateEvent(icon="atom", text="Deleting task..."))
 
     user_id, session = _extract_context(ctx)
 
@@ -226,6 +240,9 @@ async def update_task(
         description: New description (optional)
     """
     print(f"[TOOL] update_task called with task_id={task_id}")
+
+    # Stream progress update with notebook-pencil icon
+    await ctx.context.stream(ProgressUpdateEvent(icon="notebook-pencil", text="Updating task..."))
 
     user_id, session = _extract_context(ctx)
 

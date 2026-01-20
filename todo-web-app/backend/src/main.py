@@ -41,7 +41,25 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """
     # Startup
     print("🚀 Starting Todo Web App Backend...")
-    # Database connection is established on first request via deps.get_session
+
+    # Warmup: Ping database to establish connection and avoid cold start timeouts
+    # This is critical for Neon PostgreSQL which has serverless cold starts
+    try:
+        import asyncio
+        from sqlalchemy import text
+        from src.db.connection import engine
+        from sqlmodel.ext.asyncio.session import AsyncSession
+
+        print("📡 Warming up database connection (10s timeout)...")
+        async with asyncio.timeout(10):  # 10 second timeout to avoid blocking reload
+            async with AsyncSession(engine) as session:
+                await session.execute(text("SELECT 1"))
+                await session.commit()
+        print("✅ Database connection ready!")
+    except asyncio.TimeoutError:
+        print("⚠️ Database warmup timed out - will connect on first request")
+    except Exception as e:
+        print(f"⚠️ Database warmup failed (will retry on first request): {e}")
 
     yield
 

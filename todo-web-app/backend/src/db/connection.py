@@ -78,12 +78,18 @@ DATABASE_URL = get_async_database_url()
 
 engine = create_async_engine(
     DATABASE_URL,
-    echo=environ.get("ENVIRONMENT") == "development",
+    # echo=environ.get("ENVIRONMENT") == "development",
+    echo=False,  # Disable verbose SQL logging (set True for debugging queries)
     pool_pre_ping=True,  # Essential for serverless databases like Neon
     pool_size=5,
     max_overflow=10,
     pool_recycle=300,  # Recycle connections every 5 minutes
-    connect_args={"ssl": ssl_context},
+    pool_timeout=60,  # Wait up to 60s for a connection (Neon cold start can take 5-10s)
+    connect_args={
+        "ssl": ssl_context,
+        "timeout": 60,  # Connection timeout in seconds
+        "command_timeout": 60,  # Query timeout in seconds
+    },
 )
 
 

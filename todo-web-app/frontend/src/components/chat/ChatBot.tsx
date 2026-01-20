@@ -1,14 +1,23 @@
 "use client";
 
 import { useSession } from "@/lib/auth-client";
+import { useChatStore, syncThemeFromDocument } from "@/stores/chatStore";
 import { ChatKit, useChatKit } from "@openai/chatkit-react";
-import { AnimatePresence, motion } from "framer-motion";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { TbMessageChatbot } from "react-icons/tb";
-
-// Environment variables
-const CHATKIT_URL = process.env.NEXT_PUBLIC_CHATKIT_URL || "http://localhost:8000/api/chat";
-const CHATKIT_DOMAIN_KEY = process.env.NEXT_PUBLIC_CHATKIT_DOMAIN_KEY || "localhost";
+import styles from "./chat.module.css";
+import {
+    CHATKIT_API_URL,
+    CHATKIT_DOMAIN_KEY,
+    GREETING,
+    STARTER_PROMPTS,
+    TOOL_CHOICES,
+    FONT_SOURCES,
+    getPlaceholder,
+    MODEL_CHOICES,
+    DISCLAIMER,
+} from "./config";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface ChatKitSessionProps {
     storageKey: string;
@@ -16,23 +25,50 @@ interface ChatKitSessionProps {
     token?: string;
 }
 
-// Inner component that handles a specific chat session
-// By keying this component, we ensure useChatKit is completely reset when the user changes
+/**
+ * Inner component that handles a specific chat session
+ * By keying this component, we ensure useChatKit is completely reset when the user changes
+ */
 const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, token }) => {
-    // Always initialize with a thread ID from storage if available, otherwise null (New Thread)
+    // Zustand store for chat state
+    const scheme = useChatStore((state) => state.scheme);
+    const setScheme = useChatStore((state) => state.setScheme);
+    const isChatOpen = useChatStore((state) => state.isChatOpen);
+    const setIsChatOpen = useChatStore((state) => state.setIsChatOpen);
+    const storedThreadId = useChatStore((state) => state.threadId);
+    const setStoredThreadId = useChatStore((state) => state.setThreadId);
+
+    // Initialize with stored thread ID
     const [initialThread] = useState<string | null>(() => {
         if (typeof window === 'undefined') return null;
+        // First check Zustand store (persisted)
+        if (storedThreadId) return storedThreadId;
+        // Fallback to localStorage for backwards compatibility
         const saved = localStorage.getItem(storageKey);
-        if (saved) {
-            return saved;
-        }
+        if (saved) return saved;
         return null;
     });
 
-    const [isChatOpen, setIsChatOpen] = useState(false);
+    // Sync theme from document on mount and observe changes
+    useEffect(() => {
+        // Initial sync
+        syncThemeFromDocument();
+
+        // Observe document class changes for theme sync
+        const observer = new MutationObserver(() => {
+            const isDark = document.documentElement.classList.contains("dark");
+            setScheme(isDark ? "dark" : "light");
+        });
+
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class"],
+        });
+
+        return () => observer.disconnect();
+    }, [setScheme]);
 
     // Define custom fetch to inject Authorization header
-    // ChatKit generic types for fetch are compatible with window.fetch
     const customFetch: typeof fetch = useCallback(async (input, init) => {
         const headers = new Headers(init?.headers);
         if (token) {
@@ -41,6 +77,12 @@ const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, tok
         return fetch(input, { ...init, headers });
     }, [token]);
 
+    // Track active thread for dynamic placeholder
+    const [hasActiveThread, setHasActiveThread] = useState(!!initialThread);
+
+    // Memoized placeholder
+    const placeholder = useMemo(() => getPlaceholder(hasActiveThread), [hasActiveThread]);
+
     const { control, setThreadId } = useChatKit({
         api: {
             ...config,
@@ -48,52 +90,67 @@ const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, tok
         },
         initialThread,
         theme: {
-            colorScheme: 'light',
+            colorScheme: scheme,
             radius: 'pill',
             density: 'spacious',
             color: {
                 grayscale: {
                     hue: 34,
-                    tint: 9,
-                    shade: 3
+                    tint: scheme === 'dark' ? 4 : 9,
+                    shade: scheme === 'dark' ? -1 : 3,
                 },
                 accent: {
                     primary: '#a7896c',
-                    level: 3
-                }
+                    level: 3,
+                },
             },
             typography: {
-                baseSize: 16,
-                fontFamily: 'Geist Sans, sans-serif',
-            }
+                baseSize: 18,
+                fontFamily: 'Texturina, Lora, inter, system-ui, sans-serif',
+                fontSources: FONT_SOURCES,
+            },
+        },
+        header: {
+            enabled: true,
+            rightAction: {
+                icon: 'close',
+                onClick: () => setIsChatOpen(false),
+            },
         },
         startScreen: {
-            greeting: "Hi! I'm here to help you get things done.",
-            prompts: [
-                { icon: 'write', label: 'Plan', prompt: 'Draft a plan for my project' },
-                { icon: 'book-open', label: 'Tasks', prompt: 'Suggest tasks for organizing my week' },
-                { icon: 'search', label: 'Help', prompt: 'How do I use the calendar view?' }
-            ],
+            greeting: GREETING,
+            prompts: STARTER_PROMPTS,
         },
         composer: {
-            placeholder: 'Ask about your tasks...',
+            placeholder,
             attachments: { enabled: false },
-            tools: [],
+            tools: TOOL_CHOICES,
+            models: MODEL_CHOICES,
         },
+        threadItemActions: {
+            feedback: true,
+            retry: true,
+        },
+        disclaimer: DISCLAIMER,
         onThreadChange: ({ threadId }) => {
-            if (typeof window !== "undefined" && threadId) {
-                localStorage.setItem(storageKey, threadId);
+            setHasActiveThread(!!threadId);
+            if (threadId) {
+                // Sync to Zustand store (persisted)
+                setStoredThreadId(threadId);
+                // Also store in localStorage for backwards compatibility
+                if (typeof window !== "undefined") {
+                    localStorage.setItem(storageKey, threadId);
+                }
             }
+        },
+        onError: ({ error }) => {
+            console.error("ChatKit error", error);
         },
     });
 
     // Restore latest thread for authenticated users if starting new
     useEffect(() => {
         const restoreLatestThread = async () => {
-            // Only attempt restore if:
-            // 1. User is authenticated (token exists)
-            // 2. We are currently in "New Thread" mode (initialThread was null)
-            // 3. We haven't already loaded a thread (check current thread via control?)
             if (!token || initialThread) return;
 
             try {
@@ -112,7 +169,7 @@ const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, tok
                 if (data.data && data.data.length > 0) {
                     const latestThreadId = data.data[0].id;
                     setThreadId(latestThreadId);
-                    // Update storage so next reload uses it immediately
+                    setStoredThreadId(latestThreadId);
                     localStorage.setItem(storageKey, latestThreadId);
                 }
             } catch (e) {
@@ -121,69 +178,65 @@ const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, tok
         };
 
         restoreLatestThread();
-    }, [token, initialThread, config.url, customFetch, control, storageKey, setThreadId]);
+    }, [token, initialThread, config.url, customFetch, storageKey, setThreadId, setStoredThreadId]);
 
     return (
         <>
             {/* Floating Launcher Button */}
+            <AnimatePresence>
             {!isChatOpen && (
-                <button
+                    <motion.button
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{
+                            scale: 1,
+                            opacity: 1,
+                            boxShadow: [
+                                "0 0 0 0 rgba(167, 137, 108, 0.4)",
+                                "0 0 0 15px rgba(167, 137, 108, 0)",
+                                "0 0 0 0 rgba(167, 137, 108, 0)"
+                            ]
+                        }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{
+                            boxShadow: {
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            },
+                            scale: { duration: 0.3 }
+                        }}
                     onClick={() => setIsChatOpen(true)}
-                    className="fixed bottom-8 right-8 z-50 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-background border-2 border-[rgba(167,137,108,0.3)] shadow-[0_8px_30px_rgba(167,137,108,0.3)] transition-all hover:-translate-y-0.5 hover:scale-110 hover:border-[#A7896C] hover:shadow-[0_12px_40px_rgba(167,137,108,0.5)] animate-[pulseGlow_3s_infinite]"
+                    className={styles.launcherBtn}
                     aria-label="Open Chat"
                 >
-                    <TbMessageChatbot className="text-[#A7896C] text-[34px] drop-shadow-[0_0_2px_rgba(167,137,108,0.4)] transition-transform duration-500 hover:rotate-[15deg] hover:scale-110" />
-                </button>
+                    <TbMessageChatbot className={styles.chatIcon} />
+                    </motion.button>
             )}
+            </AnimatePresence>
 
             {/* Widget Container */}
             <AnimatePresence>
-                {isChatOpen && (
-                    <>
+            {isChatOpen && (
+                <>
                         {/* Backdrop */}
-                        <div
-                            onClick={() => setIsChatOpen(false)}
-                            className="fixed inset-0 z-[999] bg-black/10 backdrop-blur-[4px]"
-                        />
-
-                        {/* Widget */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        onClick={() => setIsChatOpen(false)}
+                        className={styles.backdrop}
+                    />
+                    {/* Single container with ChatKit directly inside */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                            className="fixed bottom-8 right-8 z-[1000] flex h-[600px] w-[420px] max-h-[calc(100vh-4rem)] max-w-[calc(100vw-4rem)] flex-col overflow-hidden rounded-[24px] bg-background shadow-[0_20px_60px_rgba(0,0,0,0.1)] md:max-w-[420px] xs:bottom-0 xs:right-0 xs:w-full xs:h-full xs:max-w-none xs:max-h-none xs:rounded-none"
-                            // Inline style override for mobile media query equivalent not fully covered by Tailwind 'xs' custom utility
-                            style={{
-                                // Logic handled by util classes + custom media query below
-                            }}
-                        >
-                            <style jsx global>{`
-                                @keyframes pulseGlow {
-                                    0% { box-shadow: 0 0 0 0 rgba(167, 137, 108, 0.4); }
-                                    70% { box-shadow: 0 0 0 15px rgba(167, 137, 108, 0); }
-                                    100% { box-shadow: 0 0 0 0 rgba(167, 137, 108, 0); }
-                                }
-                                @media (max-width: 480px) {
-                                  .chatkit-widget-mobile {
-                                    /* Force full screen on mobile */
-                                    position: fixed !important;
-                                    bottom: 0 !important;
-                                    right: 0 !important;
-                                    width: 100vw !important; /** Force viewport width */
-                                    height: 100vh !important; /** Force viewport height */
-                                    max-width: none !important;
-                                    max-height: none !important;
-                                    border-radius: 0 !important;
-                                  }
-                                }
-                            `}</style>
-                            <div className="flex-1 relative overflow-hidden chatkit-widget-mobile">
-                                <ChatKit control={control} className="h-full w-full" />
-                            </div>
-                        </motion.div>
-                    </>
-                )}
+                            className={styles.widgetContainer}>
+                        <ChatKit control={control} className={styles.chatkitFull} />
+                    </motion.div>
+                </>
+            )}
             </AnimatePresence>
         </>
     );
@@ -196,7 +249,6 @@ export function ChatBot() {
     const userId = session.data?.user?.id;
 
     // Fetch JWT token from /api/token endpoint when authenticated
-    // Better Auth doesn't expose raw JWT in session.data - we must fetch it
     useEffect(() => {
         const fetchToken = async () => {
             if (!session.data?.user) {
@@ -231,7 +283,7 @@ export function ChatBot() {
         <ChatKitSession
             key={storageKey}
             storageKey={storageKey}
-            config={{ url: CHATKIT_URL, domainKey: CHATKIT_DOMAIN_KEY }}
+            config={{ url: CHATKIT_API_URL, domainKey: CHATKIT_DOMAIN_KEY }}
             token={jwtToken || undefined}
         />
     );
