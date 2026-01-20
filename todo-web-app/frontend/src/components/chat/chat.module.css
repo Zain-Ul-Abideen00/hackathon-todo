@@ -1,0 +1,167 @@
+/* ============================================
+   Chat Widget - Mobile-First Responsive Design
+   ============================================
+   Breakpoints:
+   - Mobile: 0-767px (fullscreen)
+   - Tablet: 768px-1023px (centered modal)
+   - Desktop: 1024px+ (floating widget)
+   ============================================ */
+
+/* ===========================================
+   Chat Launcher Button - Mobile Default
+   =========================================== */
+.launcherBtn {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 50;
+  display: flex;
+  height: 50px;
+  width: 50px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: hsl(var(--background));
+  border: 2px solid rgba(167, 137, 108, 0.3);
+  box-shadow: 0 8px 30px rgba(167, 137, 108, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.launcherBtn:hover {
+  transform: translateY(-2px) scale(1.2);
+  border-color: #A7896C;
+  box-shadow: 0 12px 40px rgba(167, 137, 108, 0.5);
+}
+
+/* Chat Icon */
+.chatIcon {
+  color: #A7896C;
+  font-size: 28px;
+  filter: drop-shadow(0 0 2px rgba(167, 137, 108, 0.4));
+  transition: transform 0.5s ease;
+}
+
+.launcherBtn:hover .chatIcon {
+  transform: rotate(15deg) scale(1.2);
+}
+
+/* ===========================================
+   Backdrop - Hidden on Mobile
+   =========================================== */
+.backdrop {
+  display: none;
+}
+
+/* ===========================================
+   Widget Container - Mobile Fullscreen
+   =========================================== */
+.widgetContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  background-color: hsl(var(--background));
+  overflow: hidden;
+  /* Enable touch interactions */
+  touch-action: manipulation;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===========================================
+   ChatKit Component - fills entire container
+   =========================================== */
+.chatkitFull {
+  width: 100%;
+  height: 100%;
+  touch-action: manipulation;
+}
+
+/* ===========================================
+   Tablet Breakpoint (768px - 1023px)
+   Centered modal using auto margins
+   =========================================== */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .launcherBtn {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    height: 56px;
+    width: 56px;
+  }
+
+  .chatIcon {
+    font-size: 32px;
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background-color: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
+  }
+
+  /* Centered using inset + auto margin trick */
+  .widgetContainer {
+    inset: 0;
+    margin: auto;
+    width: min(90vw, 450px);
+    height: min(85vh, 650px);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ===========================================
+   Desktop Breakpoint (1024px+)
+   Floating widget bottom-right
+   =========================================== */
+@media (min-width: 1024px) {
+  .launcherBtn {
+    bottom: 2rem;
+    right: 2rem;
+    height: 60px;
+    width: 60px;
+  }
+
+  .chatIcon {
+    font-size: 34px;
+  }
+
+  .launcherBtn:hover {
+    transform: translateY(-2px) scale(1.2);
+  }
+
+  .launcherBtn:hover .chatIcon {
+    transform: rotate(15deg) scale(1.2);
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background-color: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4px);
+  }
+
+  /* Floating widget bottom-right */
+  .widgetContainer {
+    top: auto;
+    left: auto;
+    right: 2rem;
+    bottom: 2rem;
+    margin: 0;
+    width: 420px;
+    height: 600px;
+    max-height: calc(100vh - 4rem);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+}

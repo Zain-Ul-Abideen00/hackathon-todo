@@ -20,7 +20,7 @@ from src.auth.jwt import decode_token_string
 from src.db.connection import engine
 from chatkit.server import StreamingResult
 
-from .server import server
+from .server import get_server_with_session
 
 router = APIRouter(tags=["Chat"])
 
@@ -36,11 +36,11 @@ async def get_current_user_optional(
     for unauthenticated requests. Chat endpoint is accessible
     without auth, but task operations require authentication.
     """
-    print(f"[AUTH] get_current_user_optional called")
-    print(f"[AUTH] authorization header: {authorization[:50] if authorization else 'None'}...")
+    # print(f"[AUTH] get_current_user_optional called")
+    # print(f"[AUTH] authorization header: {authorization[:50] if authorization else 'None'}...")
 
     if not authorization:
-        print("[AUTH] No authorization header, returning None")
+        # print("[AUTH] No authorization header, returning None")
         return None
 
     # Extract token from "Bearer <token>" format
@@ -49,19 +49,20 @@ async def get_current_user_optional(
     else:
         token = authorization
 
-    print(f"[AUTH] Token extracted (first 20 chars): {token[:20] if token else 'None'}...")
+    # print(f"[AUTH] Token extracted (first 20 chars): {token[:20] if token else 'None'}...")
 
     # Handle implicit/frontend usage where "null" might be sent as string
     if token == "null" or token == "undefined":
-        print("[AUTH] Token is 'null' or 'undefined', returning None")
+        # print("[AUTH] Token is 'null' or 'undefined', returning None")
         return None
 
     try:
         payload = decode_token_string(token)
-        print(f"[AUTH] Token verified successfully: {payload}")
+        # print(f"[AUTH] Token verified successfully: {payload}")
+        # print(f"[AUTH] Token decoded successfully, user_id: {payload.get('sub')}")
         return payload
     except Exception as e:
-        print(f"[AUTH] Token verification failed: {e}")
+        print(f"[AUTH ERROR] Token verification failed: {e}")
         return None
 
 
@@ -121,9 +122,12 @@ async def chat_endpoint(
                         "session": session,
                     }
 
+                    # Get server with PostgresStore for this session
+                    session_server = get_server_with_session(session)
+
                     # Process using standard server.process which calls respond->agent
                     # ChatKit expects raw bytes, not decoded string
-                    result = await server.process(body, context)
+                    result = await session_server.process(body, context)
 
                     if isinstance(result, StreamingResult):
                         async for chunk in result:
@@ -152,8 +156,11 @@ async def chat_endpoint(
                     "session": session,
                 }
 
+                # Get server with PostgresStore for this session
+                session_server = get_server_with_session(session)
+
                 # ChatKit expects raw bytes, not decoded string
-                result = await server.process(body, context)
+                result = await session_server.process(body, context)
 
                 if isinstance(result, StreamingResult):
                      # Should not happen for non-streaming types, but safe fallback

@@ -1,30 +1,17 @@
 """
 AI Agent for Todo Management.
 
-Uses OpenAI Agents SDK with LiteLLM for Gemini model access.
+Uses OpenAI Agents SDK with LiteLLM for multi-provider model access.
+Supports user-selectable models from frontend (Gemini, Groq).
 
 Reference: .agent/skills/building-with-openai-agents/SKILL.md
 """
 
-import os
-
 from agents import Agent
-from agents.extensions.models.litellm_model import LitellmModel
 from chatkit.agents import AgentContext
 
+from .models import get_task_model, create_task_model
 from .tools import ALL_TOOLS
-
-
-def create_model() -> LitellmModel:
-    """Create LiteLLM model with Gemini configuration."""
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY environment variable is required")
-
-    return LitellmModel(
-        model="gemini/gemini-2.5-flash",
-        api_key=api_key,
-    )
 
 
 INSTRUCTIONS = """You are a friendly and helpful Todo Assistant that helps users manage their tasks through natural language conversation.
@@ -94,6 +81,55 @@ Recognize these patterns:
 - "Change the description of X"
 - "Actually, make it Y instead" (contextual update)
 
+## Smart Task Identification (IMPORTANT)
+
+When the user wants to complete, delete, or update a task but only provides a **task name/description** (not a task ID), follow this workflow:
+
+### Step 1: Auto-Fetch Tasks
+- Call `list_tasks` first to get all the user's tasks
+- You need the task ID to perform operations, so fetching is mandatory
+
+### Step 2: Match by Name
+Use this matching priority:
+1. **Exact match (case-insensitive)**: If a task title matches exactly (ignoring case), use that task
+2. **Fuzzy/similar match**: If no exact match, find the task with the most similar title (contains the keyword, partial match, etc.)
+
+### Step 3: Handle Results
+
+**If exactly ONE match found:**
+→ Proceed immediately with the operation (complete/delete/update) - no need to ask for confirmation
+
+**If MULTIPLE matches found (same or similar names):**
+→ List all matching tasks with their IDs and ask the user to specify which one:
+   "I found multiple tasks matching 'buy milk':
+   1. [ID: 5] Buy milk (pending)
+   2. [ID: 12] Buy milk for coffee (completed)
+   Which one do you mean? Please specify by number or ID."
+
+**If NO matches found:**
+→ Inform the user and offer to create:
+   "I couldn't find a task called 'buy milk'. Would you like me to create it for you?"
+
+### Example Workflows
+
+**User:** "Complete buy milk" (with complete_task tool selected)
+**Agent workflow:**
+1. Call `list_tasks` → finds task ID 5 with title "Buy milk"
+2. Call `complete_task(task_id=5)`
+3. Respond: "Done! ✅ 'Buy milk' is now complete!"
+
+**User:** "Delete groceries"
+**Agent workflow:**
+1. Call `list_tasks` → finds ID 3 "Buy groceries" and ID 7 "Groceries for party"
+2. Ask: "I found 2 tasks with 'groceries' - which should I delete?"
+3. User: "the first one"
+4. Call `delete_task(task_id=3)`
+
+**User:** "Mark laundry as done"
+**Agent workflow:**
+1. Call `list_tasks` → no task contains "laundry"
+2. Respond: "I don't see a 'laundry' task. Want me to create one?"
+
 ## Guidelines
 
 1. **Be conversational**: Respond naturally like a helpful friend, not a robot
@@ -101,7 +137,7 @@ Recognize these patterns:
 3. **Be proactive**: Suggest next steps when appropriate
 4. **Ask for clarification**: If unsure which task they mean, list options and ask
 5. **Handle errors gracefully**: If something fails, explain in simple terms
-6. **Use task IDs when needed**: For complete/delete/update, you need the task ID - list tasks first if needed
+6. **Smart task lookup**: When user mentions a task by name, auto-fetch tasks and find the best match before operating
 7. **Be encouraging**: Celebrate completed tasks, motivate users
 
 ## Authentication
@@ -136,12 +172,12 @@ User: "Actually change buy groceries to buy organic vegetables"
 Always be helpful and make task management feel effortless!"""
 
 
-# Create agent instance (lazy initialization to allow for env loading)
+# Agent singleton for default model (used when no model selection)
 _agent = None
 
 
 def get_agent() -> Agent[AgentContext]:
-    """Get or create the todo agent singleton.
+    """Get or create the todo agent singleton with default model.
 
     The agent is typed with AgentContext so that tools can access
     request_context (containing user_id and session) via ctx.context.
@@ -151,10 +187,32 @@ def get_agent() -> Agent[AgentContext]:
         _agent = Agent[AgentContext](
             name="Todo Assistant",
             instructions=INSTRUCTIONS,
-            model=create_model(),
+            model=create_task_model(),
             tools=ALL_TOOLS,
         )
     return _agent
+
+
+def create_agent_with_model(model_id: str | None = None) -> Agent[AgentContext]:
+    """Create a Todo Agent with user-selected model.
+
+    Unlike get_agent(), this creates a fresh agent instance with the
+    specified model. Use this when the user selects a model from the
+    frontend composer.
+
+    Args:
+        model_id: Frontend model ID (e.g., "gemini-2.5-flash", "groq-llama-3.3-70b").
+                  If None, uses default model.
+
+    Returns:
+        Agent configured with the specified model.
+    """
+    return Agent[AgentContext](
+        name="Todo Assistant",
+        instructions=INSTRUCTIONS,
+        model=get_task_model(model_id),
+        tools=ALL_TOOLS,
+    )
 
 
 # Export for convenience when model is ready

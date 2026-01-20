@@ -97,6 +97,13 @@ html {
 	font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
+/* Texturina loaded via config.ts or external link */
+.text-texturina-regular {
+  font-family: "Texturina", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
 /* Companies slider SVG colors - override inline fill="none" */
 .company-logo path,
 .company-logo rect,

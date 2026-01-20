@@ -24,9 +24,9 @@
 
 **Purpose**: Project initialization and dependency verification
 
-- [ ] T001 Verify project dependencies in `todo-web-app/backend/pyproject.toml` (sqlmodel, asyncpg, openai-chatkit)
-- [ ] T002 [P] Ensure `.env` has DATABASE_URL configured for Neon PostgreSQL
-- [ ] T003 [P] Verify existing chat module structure in `todo-web-app/backend/src/chat/`
+- [x] T001 Verify project dependencies in `todo-web-app/backend/pyproject.toml` (sqlmodel, asyncpg, openai-chatkit)
+- [x] T002 [P] Ensure `.env` has DATABASE_URL configured for Neon PostgreSQL
+- [x] T003 [P] Verify existing chat module structure in `todo-web-app/backend/src/chat/`
 
 ---
 
@@ -42,12 +42,12 @@
 
 **Independent Test**: Run `alembic upgrade head` and verify tables exist
 
-- [ ] T004 [US5] Create ChatKitThread and ChatKitItem models in `todo-web-app/backend/src/models/chatkit.py`
-- [ ] T005 [US5] Update model exports in `todo-web-app/backend/src/models/__init__.py` to include ChatKitThread and ChatKitItem
-- [ ] T006 [US5] Generate Alembic migration with `alembic revision --autogenerate -m "add_chatkit_tables"`
-- [ ] T007 [US5] Review and verify migration file in `todo-web-app/backend/alembic/versions/`
-- [ ] T008 [US5] Apply migration with `alembic upgrade head`
-- [ ] T009 [US5] Verify cascade delete works by testing thread deletion in database
+- [x] T004 [US5] Create ChatKitThread and ChatKitItem models in `todo-web-app/backend/src/models/chatkit.py`
+- [x] T005 [US5] Update model exports in `todo-web-app/backend/src/models/__init__.py` to include ChatKitThread and ChatKitItem
+- [x] T006 [US5] Generate Alembic migration with `alembic revision --autogenerate -m "add_chatkit_tables"`
+- [x] T007 [US5] Review and verify migration file in `todo-web-app/backend/alembic/versions/`
+- [x] T008 [US5] Apply migration with `alembic upgrade head`
+- [x] T009 [US5] Verify cascade delete works by testing thread deletion in database
 
 ### User Story 6 - PostgresStore Implementation (P1)
 
@@ -55,14 +55,14 @@
 
 **Independent Test**: Run PostgresStore unit tests
 
-- [ ] T010 [P] [US6] Write unit tests for PostgresStore in `todo-web-app/backend/tests/test_postgres_store.py`
-- [ ] T011 [US6] Implement PostgresStore class in `todo-web-app/backend/src/chat/store.py`
-- [ ] T012 [US6] Implement `load_thread()` method with thread creation logic
-- [ ] T013 [US6] Implement `save_thread()` method with upsert and metadata update
-- [ ] T014 [US6] Implement `add_thread_item()` and `load_thread_items()` methods
-- [ ] T015 [US6] Implement `load_threads()` method with user isolation filter
-- [ ] T016 [US6] Implement `delete_thread()` method
-- [ ] T017 [US6] Run PostgresStore tests to verify: `uv run pytest tests/test_postgres_store.py -v`
+- [x] T010 [P] [US6] Write unit tests for PostgresStore in `todo-web-app/backend/tests/test_postgres_store.py`
+- [x] T011 [US6] Implement PostgresStore class in `todo-web-app/backend/src/chat/store.py`
+- [x] T012 [US6] Implement `load_thread()` method with thread creation logic
+- [x] T013 [US6] Implement `save_thread()` method with upsert and metadata update
+- [x] T014 [US6] Implement `add_thread_item()` and `load_thread_items()` methods
+- [x] T015 [US6] Implement `load_threads()` method with user isolation filter
+- [x] T016 [US6] Implement `delete_thread()` method
+- [x] T017 [US6] Run PostgresStore tests to verify: `uv run pytest tests/test_postgres_store.py -v`
 
 **Checkpoint**: Foundation ready - PostgresStore passes all unit tests
 
@@ -76,11 +76,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Update server.py to use PostgresStore instead of InMemoryStore in `todo-web-app/backend/src/chat/server.py`
-- [ ] T019 [US1] Create session factory integration for PostgresStore in `todo-web-app/backend/src/chat/server.py`
-- [ ] T020 [US1] Ensure user_id from auth context is passed to store methods
-- [ ] T021 [US1] Add integration test for authenticated persistence in `todo-web-app/backend/tests/test_chat.py`
-- [ ] T022 [US1] Run integration tests: `uv run pytest tests/test_chat.py -v`
+- [x] T018 [US1] Update server.py to use PostgresStore instead of InMemoryStore in `todo-web-app/backend/src/chat/server.py`
+- [x] T019 [US1] Create session factory integration for PostgresStore in `todo-web-app/backend/src/chat/server.py`
+- [x] T020 [US1] Ensure user_id from auth context is passed to store methods
+- [x] T021 [US1] Add integration test for authenticated persistence in `todo-web-app/backend/tests/test_chat.py`
+- [x] T022 [US1] Run integration tests: `uv run pytest tests/test_chat.py -v`
 
 **Checkpoint**: Authenticated users can persist and restore conversations
 
@@ -94,11 +94,11 @@
 
 ### Implementation for User Story 7
 
-- [ ] T023 [US7] Add user isolation test in `todo-web-app/backend/tests/test_chat.py::TestUserIsolation`
-- [ ] T024 [US7] Verify load_threads() filters by user_id in PostgresStore
-- [ ] T025 [US7] Verify load_thread() creates new thread if accessed by wrong user
-- [ ] T026 [US7] Add test for anonymous user receiving empty thread list
-- [ ] T027 [US7] Run isolation tests: `uv run pytest tests/test_chat.py::TestUserIsolation -v`
+- [x] T023 [US7] Add user isolation test in `todo-web-app/backend/tests/test_chat.py::TestUserIsolation`
+- [x] T024 [US7] Verify load_threads() filters by user_id in PostgresStore
+- [x] T025 [US7] Verify load_thread() creates new thread if accessed by wrong user
+- [x] T026 [US7] Add test for anonymous user receiving empty thread list
+- [x] T027 [US7] Run isolation tests: `uv run pytest tests/test_chat.py::TestUserIsolation -v`
 
 **Checkpoint**: User isolation fully enforced, no cross-user data leakage
 
@@ -112,10 +112,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T028 [US2] Verify frontend ChatBot component saves thread_id to localStorage key `chatkit_thread_anonymous`
-- [ ] T029 [US2] Verify initialThread prop in useChatKit reads from localStorage
-- [ ] T030 [US2] Verify onThreadChange callback saves to localStorage
-- [ ] T031 [US2] Test guest flow: send message, refresh, verify restoration
+- [x] T028 [US2] Verify frontend ChatBot component saves thread_id to localStorage key `chatkit_thread_anonymous`
+- [x] T029 [US2] Verify initialThread prop in useChatKit reads from localStorage
+- [x] T030 [US2] Verify onThreadChange callback saves to localStorage
+- [x] T031 [US2] Test guest flow: send message, refresh, verify restoration
 
 **Checkpoint**: Guest users can continue conversations within browser session
 
@@ -129,11 +129,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] Verify `generate_title()` method exists in server.py
-- [ ] T033 [US3] Ensure title is saved to thread.metadata in PostgresStore
-- [ ] T034 [US3] Verify ThreadUpdatedEvent is sent after title generation
-- [ ] T035 [US3] Add fallback title logic for generation failures
-- [ ] T036 [US3] Test title generation flow with test message
+- [x] T032 [US3] Verify `generate_title()` method exists in server.py
+- [x] T033 [US3] Ensure title is saved to thread.metadata in PostgresStore
+- [x] T034 [US3] Verify ThreadUpdatedEvent is sent after title generation
+- [x] T035 [US3] Add fallback title logic for generation failures
+- [x] T036 [US3] Test title generation flow with test message
 
 **Checkpoint**: Threads display meaningful auto-generated titles
 
@@ -147,10 +147,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Verify frontend restoreLatestThread effect in ChatBot.tsx
-- [ ] T038 [US4] Test threads.list API returns most recent first (order: desc)
-- [ ] T039 [US4] Verify setThreadId is called with latest thread on login
-- [ ] T040 [US4] Test empty thread list creates new thread
+- [x] T037 [US4] Verify frontend restoreLatestThread effect in ChatBot.tsx
+- [x] T038 [US4] Test threads.list API returns most recent first (order: desc)
+- [x] T039 [US4] Verify setThreadId is called with latest thread on login
+- [x] T040 [US4] Test empty thread list creates new thread
 
 **Checkpoint**: Returning users seamlessly resume their last conversation
 
@@ -164,13 +164,13 @@
 
 ### Tests for User Story 8
 
-- [ ] T041 [US8] Review existing tests in `todo-web-app/backend/tests/test_chat_tools.py`
-- [ ] T042 [P] [US8] Add test for add_task tool with valid input
-- [ ] T043 [P] [US8] Add test for list_tasks tool with status filtering
-- [ ] T044 [P] [US8] Add test for complete_task tool status change
-- [ ] T045 [P] [US8] Add test for delete_task tool removal
-- [ ] T046 [P] [US8] Add test for update_task tool field modification
-- [ ] T047 [US8] Run coverage report: `uv run pytest tests/test_chat_tools.py --cov=src/chat/tools --cov-report=term-missing`
+- [x] T041 [US8] Review existing tests in `todo-web-app/backend/tests/test_chat_tools.py`
+- [x] T042 [P] [US8] Add test for add_task tool with valid input
+- [x] T043 [P] [US8] Add test for list_tasks tool with status filtering
+- [x] T044 [P] [US8] Add test for complete_task tool status change
+- [x] T045 [P] [US8] Add test for delete_task tool removal
+- [x] T046 [P] [US8] Add test for update_task tool field modification
+- [x] T047 [US8] Run coverage report: `uv run pytest tests/test_chat_tools.py --cov=src/chat/tools --cov-report=term-missing`
 
 **Checkpoint**: MCP tools have documented behavior and ≥80% coverage
 
@@ -184,11 +184,11 @@
 
 ### Tests for User Story 9
 
-- [ ] T048 [US9] Review existing tests in `todo-web-app/backend/tests/test_chat.py`
-- [ ] T049 [P] [US9] Add test for thread.respond creates thread in database
-- [ ] T050 [P] [US9] Add test for threads.list returns user's threads
-- [ ] T051 [P] [US9] Add test for streaming SSE response format
-- [ ] T052 [US9] Run all integration tests: `uv run pytest tests/test_chat.py -v --cov=src/chat`
+- [x] T048 [US9] Review existing tests in `todo-web-app/backend/tests/test_chat.py`
+- [x] T049 [P] [US9] Add test for thread.respond creates thread in database
+- [x] T050 [P] [US9] Add test for threads.list returns user's threads
+- [x] T051 [P] [US9] Add test for streaming SSE response format
+- [x] T052 [US9] Run all integration tests: `uv run pytest tests/test_chat.py -v --cov=src/chat`
 
 **Checkpoint**: Chat endpoint passes all integration tests
 
