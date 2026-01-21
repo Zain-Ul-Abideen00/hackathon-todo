@@ -8,7 +8,7 @@ const Companies = () => {
 				<p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-2">
 					Used by productive teams worldwide
 				</p>
-				<h3 className="text-lg font-semibold bg-gradient-to-r from-primary via-foreground to-primary bg-clip-text text-transparent">
+				<h3 className="text-lg font-semibold bg-linear-to-r from-primary via-foreground to-primary bg-clip-text text-transparent">
 					Powering Productivity for Teams That Get Things Done
 				</h3>
 			</div>
@@ -16,8 +16,8 @@ const Companies = () => {
 			{/* Logo slider container */}
 			<div className="overflow-hidden border-y border-border relative">
 				{/* Gradient masks for smooth edges */}
-				<div className="pointer-events-none absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-background to-transparent z-10" />
-				<div className="pointer-events-none absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-background to-transparent z-10" />
+				<div className="pointer-events-none absolute left-0 top-0 h-full w-24 bg-linear-to-r from-background to-transparent z-10" />
+				<div className="pointer-events-none absolute right-0 top-0 h-full w-24 bg-linear-to-l from-background to-transparent z-10" />
 
 				<div className="group flex overflow-hidden p-2 py-6">
 					<div

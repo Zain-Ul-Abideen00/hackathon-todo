@@ -72,7 +72,7 @@ export function Features() {
 				>
 					<h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
 						Everything you need to{" "}
-						<span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+						<span className="bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
 							stay productive
 						</span>
 					</h2>
@@ -103,7 +103,7 @@ export function Features() {
 							<GlowingCard
 								key={index}
 								glowColor={feature.glowColor}
-								className="space-y-4 min-h-[200px]"
+								className="space-y-4 min-h-50"
 							>
 								<div className="flex items-center space-x-3">
 									<div

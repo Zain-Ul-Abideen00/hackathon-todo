@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { useChatStore, syncThemeFromDocument } from "@/stores/chatStore";
 import { ChatKit, useChatKit } from "@openai/chatkit-react";
@@ -23,13 +24,14 @@ interface ChatKitSessionProps {
     storageKey: string;
     config: { url: string; domainKey: string };
     token?: string;
+    hideLauncherOnMobile?: boolean;
 }
 
 /**
  * Inner component that handles a specific chat session
  * By keying this component, we ensure useChatKit is completely reset when the user changes
  */
-const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, token }) => {
+const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, token, hideLauncherOnMobile }) => {
     // Zustand store for chat state
     const scheme = useChatStore((state) => state.scheme);
     const setScheme = useChatStore((state) => state.setScheme);
@@ -184,7 +186,7 @@ const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, tok
         <>
             {/* Floating Launcher Button */}
             <AnimatePresence>
-            {!isChatOpen && (
+                {!isChatOpen && (
                     <motion.button
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{
@@ -205,38 +207,38 @@ const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, tok
                             },
                             scale: { duration: 0.3 }
                         }}
-                    onClick={() => setIsChatOpen(true)}
-                    className={styles.launcherBtn}
-                    aria-label="Open Chat"
-                >
-                    <TbMessageChatbot className={styles.chatIcon} />
+                        onClick={() => setIsChatOpen(true)}
+                        className={`${styles.launcherBtn} ${hideLauncherOnMobile ? styles.hiddenOnMobile : ''}`}
+                        aria-label="Open Chat"
+                    >
+                        <TbMessageChatbot className={styles.chatIcon} />
                     </motion.button>
-            )}
+                )}
             </AnimatePresence>
 
             {/* Widget Container */}
             <AnimatePresence>
-            {isChatOpen && (
-                <>
+                {isChatOpen && (
+                    <>
                         {/* Backdrop */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                        onClick={() => setIsChatOpen(false)}
-                        className={styles.backdrop}
-                    />
-                    {/* Single container with ChatKit directly inside */}
+                            onClick={() => setIsChatOpen(false)}
+                            className={styles.backdrop}
+                        />
+                        {/* Single container with ChatKit directly inside */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                             className={styles.widgetContainer}>
-                        <ChatKit control={control} className={styles.chatkitFull} />
-                    </motion.div>
-                </>
-            )}
+                            <ChatKit control={control} className={styles.chatkitFull} />
+                        </motion.div>
+                    </>
+                )}
             </AnimatePresence>
         </>
     );
@@ -244,6 +246,7 @@ const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, tok
 
 export function ChatBot() {
     const session = useSession();
+    const pathname = usePathname();
     const [jwtToken, setJwtToken] = useState<string | null>(null);
 
     const userId = session.data?.user?.id;
@@ -279,12 +282,19 @@ export function ChatBot() {
         ? `chatkit_thread_user_${userId}`
         : "chatkit_thread_anonymous";
 
+    // Check if we are on a dashboard page to hide the floating launcher on mobile
+    const isDashboard = pathname?.startsWith("/dashboard") ||
+        pathname?.startsWith("/tasks") ||
+        pathname?.startsWith("/calendar") ||
+        pathname?.startsWith("/settings");
+
     return (
         <ChatKitSession
             key={storageKey}
             storageKey={storageKey}
             config={{ url: CHATKIT_API_URL, domainKey: CHATKIT_DOMAIN_KEY }}
             token={jwtToken || undefined}
+            hideLauncherOnMobile={!!isDashboard}
         />
     );
 }
