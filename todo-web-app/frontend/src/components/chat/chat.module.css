@@ -7,6 +7,12 @@
    - Desktop: 1024px+ (floating widget)
    ============================================ */
 
+@media (max-width: 1023px) {
+  .hiddenOnMobile {
+    display: none !important;
+  }
+}
+
 /* ===========================================
    Chat Launcher Button - Mobile Default
    =========================================== */
