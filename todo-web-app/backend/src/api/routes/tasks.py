@@ -62,6 +62,23 @@ async def create_task(
 
 
 @router.get(
+    "/{user_id}/tasks/stats",
+    status_code=status.HTTP_200_OK,
+    summary="Get task statistics",
+)
+@limiter.limit("50/minute")
+async def get_task_stats(
+    request: Request,
+    user_id: Annotated[str, Path(description="User ID")],
+    session: DBSession,
+    current_user: Annotated[dict, Depends(get_current_user)],
+) -> dict:
+    """Get aggregated task statistics for the user."""
+    validate_user_access(user_id, current_user)
+    return await task_service.get_task_stats(session, user_id)
+
+
+@router.get(
     "/{user_id}/tasks",
     response_model=TaskListResponse,
     summary="List all tasks with filtering and pagination",
@@ -77,39 +94,53 @@ async def list_tasks(
     current_user: Annotated[dict, Depends(get_current_user)],
     status_filter: Annotated[
         str | None,
-        Query(alias="status", description="Filter: all, pending, completed"),
-    ] = "all",
+        Query(alias="status", description="Filter: all, todo, in_progress, completed, overdue"),
+    ] = None,
+    priority: Annotated[
+        str | None,
+        Query(description="Filter by priority: low, medium, high"),
+    ] = None,
+    search: Annotated[
+        str | None,
+        Query(description="Search title or description"),
+    ] = None,
     sort: Annotated[
         str | None,
-        Query(description="Sort by: created (default), title"),
+        Query(description="Sort by: created, title, due_date, priority"),
     ] = "created",
+    order: Annotated[
+        str | None,
+        Query(description="Sort order: asc, desc"),
+    ] = "desc",
     cursor: Annotated[str | None, Query(description="Pagination cursor")] = None,
     limit: Annotated[int, Query(ge=1, le=100, description="Items per page")] = 20,
 ) -> TaskListResponse:
     """Retrieve paginated list of tasks with optional filtering and sorting.
 
-    - **status**: Filter by completion status (all, pending, completed)
-    - **sort**: Sort by created (newest first) or title (alphabetical)
-    - **cursor**: Pagination cursor from previous response
-    - **limit**: Items per page (1-100, default 20)
+    - **status**: Filter by status (todo, in_progress, completed, overdue)
+    - **priority**: Filter by priority (low, medium, high)
+    - **sort**: Sort field
+    - **order**: Sort direction (asc/desc)
+    - **search**: Search text
     """
     validate_user_access(user_id, current_user)
 
-    # Convert status filter to completed boolean
-    completed = None
-    if status_filter == "pending":
-        completed = False
-    elif status_filter == "completed":
-        completed = True
-    # else "all" -> completed = None
+    # Clean up status filter if 'all' is passed
+    actual_status = None
+    if status_filter and status_filter != "all":
+        actual_status = status_filter
 
     result = await task_service.list_tasks_paginated(
         session,
         user_id,
-        completed=completed,
+        completed=None,  # Deprecated
         sort_by=sort or "created",
+        sort_order=order or "desc",
         cursor=cursor,
         limit=limit,
+        status_filter=actual_status,
+        priority_filter=priority,
+        search=search,
     )
 
     return TaskListResponse(

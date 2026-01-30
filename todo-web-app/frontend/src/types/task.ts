@@ -66,6 +66,7 @@ export type ViewMode = "grid" | "list";
  */
 export interface ListTasksParams {
 	status?: FilterStatus;
+    priority?: TaskPriority;
 	sort_by?: SortBy;
 	order?: SortOrder;
 	page?: number;

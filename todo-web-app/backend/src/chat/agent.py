@@ -201,7 +201,7 @@ def create_agent_with_model(model_id: str | None = None) -> Agent[AgentContext]:
     frontend composer.
 
     Args:
-        model_id: Frontend model ID (e.g., "gemini-2.5-flash", "groq-llama-3.3-70b").
+        model_id: Frontend model ID (e.g., "gemini-2.5-flash", "groq-llama-3.3-70b", "groq-kimi-k2", "groq-gpt-oss-120b").
                   If None, uses default model.
 
     Returns:

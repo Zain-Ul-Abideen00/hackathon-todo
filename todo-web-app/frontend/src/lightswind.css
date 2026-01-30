@@ -172,19 +172,7 @@
 	}
 }
 
-/* Animated Gradient Border Button Property and Animation */
-/* @property MUST be defined at the global scope, not inside a rule */
-@property --border-angle {
-	syntax: "<angle>";
-	inherits: true;
-	initial-value: 0turn;
-}
 
-@keyframes bg-spin {
-	to {
-		--border-angle: 1turn;
-	}
-}
 
 /* Product Card Skeleton Loader Animation */
 @keyframes skeletonLoader {
@@ -484,27 +472,7 @@ body {
 	background: rgba(255, 255, 255, 0.15);
 }
 
-/* Animated Gradient Border Button Styles */
-.gradient-border {
-	--border-angle: 0turn;
-	background:
-		conic-gradient(from var(--border-angle), #000, #000) padding-box,
-		conic-gradient(
-			from var(--border-angle),
-			transparent 25%,
-			#08f,
-			rgb(1, 206, 46) 99%,
-			transparent
-		)
-		border-box;
-	animation: bg-spin 3s linear infinite;
-	border: 1px solid transparent;
-	background-origin: border-box;
-}
 
-.gradient-border:hover {
-	animation-play-state: paused;
-}
 
 /* Animated Range Input Styles */
 .animatedRangeInput .animatedRangeInputLevel::-webkit-slider-thumb {
@@ -857,10 +825,7 @@ body {
 	animation: marquee-right-left 12s linear infinite;
 }
 
-.animated-gradient-border-button {
-	--border-angle: 0turn;
-	animation: bg-spin 3s linear infinite;
-}
+
 
 .animate-skeletonLoader {
 	animation: skeletonLoader 5s ease-in-out infinite;

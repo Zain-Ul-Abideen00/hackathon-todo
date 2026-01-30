@@ -4,20 +4,28 @@
  * @module app/page
  */
 
-import { Features } from "@/components/landing/Features";
+import dynamic from "next/dynamic";
 import { Hero } from "@/components/landing/Hero";
-import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 
+const Features = dynamic(() => import("@/components/landing/Features").then(mod => mod.Features), {
+    loading: () => <div className="min-h-50" />,
+});
+const Pricing = dynamic(() => import("@/components/landing/Pricing").then(mod => mod.Pricing));
+const About = dynamic(() => import("@/components/landing/About").then(mod => mod.About));
+const Footer = dynamic(() => import("@/components/layout/Footer").then(mod => mod.Footer));
+
 export default function HomePage() {
-	return (
-		<div className="flex min-h-screen flex-col">
-			<Navbar />
-			<main className="flex-1">
-				<Hero />
-				<Features />
-			</main>
-			<Footer />
-		</div>
-	);
+    return (
+        <div className="flex min-h-screen flex-col overflow-x-hidden">
+            <Navbar />
+            <main className="flex-1">
+                <Hero />
+                <Features />
+                <Pricing />
+                <About />
+            </main>
+            <Footer />
+        </div>
+    );
 }

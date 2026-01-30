@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { BsFillMenuButtonWideFill as Menu, BsX as X } from "react-icons/bs";
 import { CiLogout as LogOut } from "react-icons/ci";
+import { FiLogOut as LogOut2 } from "react-icons/fi";
 import {
 	FiCheckSquare as CheckSquare,
 	FiDollarSign as DollarSign,
@@ -163,7 +164,7 @@ export function Navbar() {
 											animationType="diag-down-right"
 											className="text-muted-foreground"
 										/>
-									</div>
+                                    </div>
 								</motion.div>
 							)}
 						</AnimatePresence>
@@ -185,7 +186,8 @@ export function Navbar() {
 
 					{/* Right: Primary Action */}
 					<div className="flex items-center gap-2 shrink-0 ml-auto">
-						{isLoggedIn && user ? (
+                        {isLoggedIn && user ? (
+                            isScrolled ? (
 							<Link href="/dashboard">
 								<Button
 									size="sm"
@@ -194,7 +196,23 @@ export function Navbar() {
 									<LayoutDashboard className="h-4 w-4" />
 									<span className="hidden sm:inline">Dashboard</span>
 								</Button>
-							</Link>
+                                </Link>
+                            ) : (
+                                    <Link href="/">
+                                        <Button
+                                            onClick={async () => {
+                                                await signOut();
+                                                setIsMenuOpen(false);
+                                                window.location.href = "/";
+                                            }}
+                                            size="sm"
+                                            className="gap-2 rounded-full h-9 px-4 lg:px-6 shadow-sm border border-border hover:scale-105 transition-all duration-500 hover:bg-destructive/10 hover:text-destructive hover:border-destructive text-primary bg-primary/10 cursor-pointer"
+                                        >
+                                            <LogOut className="h-8 w-8" />
+                                            <span className="hidden sm:inline">Sign Out</span>
+                                        </Button>
+                                    </Link>
+                            )
 						) : /* Logged Out State Logic */
 						!isScrolled ? (
 							/* Top: Show Log in */
@@ -204,19 +222,18 @@ export function Navbar() {
 									className="gap-2 rounded-full h-9 px-6 shadow-sm border border-border hover:scale-105 transition-all duration-500 hover:bg-muted/50 hover:text-foreground text-primary bg-primary/10 cursor-pointer"
 								>
 									<LogIn className="h-4 w-4" />
-									<span>Log in</span>
+									<span>Sign in</span>
 								</Button>
 							</Link>
 						) : (
-							/* Scrolled: Show Get Started */
+							/* Scrolled: Show Sign Up */
 							<Link href="/auth/signup">
 								<Button
 									size="sm"
 									className="gap-2 rounded-full h-9 px-6 shadow-sm border border-border hover:scale-105 transition-all duration-500 hover:bg-muted/50 hover:text-foreground text-primary bg-primary/10 cursor-pointer"
 								>
 									<Rocket className="h-4 w-4" />
-									<span className="hidden sm:inline">Get Started</span>
-									<span className="sm:hidden">Start</span>
+									<span className="inline">Sign Up</span>
 								</Button>
 							</Link>
 						)}
@@ -279,7 +296,7 @@ export function Navbar() {
 								{!isLoggedIn ? (
 									<Link href="/auth/login" onClick={() => setIsMenuOpen(false)}>
 										<div className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border/50 hover:bg-muted/30 transition-colors hover:text-foreground cursor-pointer h-full">
-											<span className="text-sm font-medium ml-1">Log in</span>
+											<span className="text-sm font-medium ml-1">Sign in</span>
 											<div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted/50">
 												<LogIn className="h-4 w-4" />
 											</div>

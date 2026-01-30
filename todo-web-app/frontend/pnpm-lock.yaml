@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  lightswind:
+    hash: eb05551ca85877674ed1afef2f440599b38a52787a638c3b2ef4a03103e953b3
+    path: patches/lightswind.patch
+
 importers:
 
   .:
@@ -37,7 +42,7 @@ importers:
         version: 6.1.3
       lightswind:
         specifier: ^3.1.20
-        version: 3.1.20(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: 3.1.20(patch_hash=eb05551ca85877674ed1afef2f440599b38a52787a638c3b2ef4a03103e953b3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       next:
         specifier: 16.1.1
         version: 16.1.1(@babel/core@7.28.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -5397,7 +5402,7 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.30.2
       lightningcss-win32-x64-msvc: 1.30.2
 
-  lightswind@3.1.20(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
+  lightswind@3.1.20(patch_hash=eb05551ca85877674ed1afef2f440599b38a52787a638c3b2ef4a03103e953b3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
     dependencies:
       class-variance-authority: 0.7.1
       clsx: 2.1.1

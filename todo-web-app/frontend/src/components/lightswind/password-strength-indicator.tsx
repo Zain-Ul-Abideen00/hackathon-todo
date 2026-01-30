@@ -56,6 +56,7 @@ export interface PasswordStrengthIndicatorProps {
      * Additional props for the input element
      */
     inputProps?: InputProps; // <--- Use the imported InputProps here
+    startIcon?: React.ReactNode;
 }
 
 // Password strength calculation based on common rules
@@ -114,6 +115,7 @@ export function PasswordStrengthIndicator({
     placeholder = "Enter your password",
     showVisibilityToggle = true,
     inputProps,
+    startIcon,
 }: PasswordStrengthIndicatorProps) {
     const [password, setPassword] = useState(value || "");
     const [showPassword, setShowPassword] = useState(false);
@@ -154,6 +156,11 @@ export function PasswordStrengthIndicator({
             )}
 
             <div className="relative">
+                {startIcon && (
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10">
+                        {startIcon}
+                    </div>
+                )}
                 <Input
                     ref={inputRef}
                     id="password"
@@ -197,13 +204,13 @@ export function PasswordStrengthIndicator({
             </div>
 
             {/* Password strength bar */}
-            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden flex gap-0.5">
+            <div className="h-1.5 w-full bg-card rounded-full overflow-hidden flex gap-0.5">
                 {Array.from({ length: 4 }).map((_, i) => (
                     <div
                         key={i}
                         className={cn(
                             "h-full flex-1 rounded-full transition-all duration-300",
-                            i < Math.min(Math.ceil(score / 1.5), 4) ? strengthColors[level] : "bg-gray-200"
+                            i < Math.min(Math.ceil(score / 1.5), 4) ? strengthColors[level] : "bg-card"
                         )}
                     />
                 ))}

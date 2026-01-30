@@ -1,0 +1,143 @@
+diff --git a/dist/components/styles/lightswind.css b/dist/components/styles/lightswind.css
+index f078f813e4cdaf1be4826ede3bf8428a5273a96a..d9458211830e3d376efe2d534ff84b18809e42c1 100644
+--- a/dist/components/styles/lightswind.css
++++ b/dist/components/styles/lightswind.css	
+@@ -173,19 +173,7 @@
+   }
+ }
+ 
+-/* Animated Gradient Border Button Property and Animation */
+-/* @property MUST be defined at the global scope, not inside a rule */
+-@property --border-angle {
+-  syntax: "<angle>";
+-  inherits: true;
+-  initial-value: 0turn;
+-}
+ 
+-@keyframes bg-spin {
+-  to {
+-    --border-angle: 1turn;
+-  }
+-}
+ 
+ /* Product Card Skeleton Loader Animation */
+ @keyframes skeletonLoader {
+diff --git a/lightswindv1.0.css b/lightswindv1.0.css
+index 1f560a8ea548837ab464a00585ee8e0c845a01f7..68a7aa7bfe91684861e74f02ff4cadb7977174dc 100644
+--- a/lightswindv1.0.css
++++ b/lightswindv1.0.css	
+@@ -358,17 +358,7 @@ video {
+     display: none
+ }
+ 
+-@property --border-angle {
+-    syntax: "<angle>";
+-    inherits: true;
+-    initial-value: 0turn
+-}
+ 
+-@keyframes bg-spin {
+-    to {
+-        --border-angle: 1turn
+-    }
+-}
+ 
+ @keyframes skeletonBarsLoader {
+     0% {
+@@ -449,11 +439,7 @@ video {
+     background: hsla(0, 0%, 100%, .15)
+ }
+ 
+-@property --border-angle {
+-    syntax: <angle>;
+-    inherits: true;
+-    initial-value: 0turn
+-}
++
+ 
+ .animatedRangeInput .animatedRangeInputLevel::-webkit-slider-thumb {
+     -webkit-appearance: none;
+@@ -3958,12 +3944,6 @@ video {
+     animation-play-state: paused
+ }
+ 
+-@property --border-angle {
+-    syntax: "<angle>";
+-    inherits: true;
+-    initial-value: 0turn
+-}
+-
+ .animate-skeletonLoader {
+     animation: skeletonLoader 5s ease-in-out infinite
+ }
+diff --git a/plugin.js b/plugin.js
+index 0e493e81625ee7f978bce648fb1be1ffd7b6e2aa..845e1d508614aa2d5fb3e2917ffe4e0be1425bda 100644
+--- a/plugin.js
++++ b/plugin.js	
+@@ -136,17 +136,7 @@ module.exports = plugin(
+         },
+       },
+ 
+-      // Animated Gradient Border Button
+-      "@property --border-angle": {
+-        syntax: '"<angle>"',
+-        inherits: true,
+-        "initial-value": "0turn",
+-      },
+-      "@keyframes bg-spin": {
+-        to: {
+-          "--border-angle": "1turn",
+-        },
+-      },
++
+ 
+       // ProductCardSkeleton
+       "@keyframes skeletonLoader": {
+@@ -235,10 +225,7 @@ module.exports = plugin(
+       },
+ 
+ 
+-      ".animated-gradient-border-button": {
+-        "--border-angle": "0turn",
+-        animation: "animated-gradient-border-spin  3s linear infinite",
+-      },
++
+ 
+       // ProductCardSkeleton
+       ".animate-skeletonLoader": {
+@@ -546,11 +533,7 @@ module.exports = plugin(
+       ".gradient-border:hover": {
+         animationPlayState: "paused",
+       },
+-      "@property --border-angle": {
+-        syntax: "<angle>",
+-        inherits: true,
+-        "initial-value": "0turn",
+-      },
++
+ 
+       // Animatd Gradient Border Button
+       ".animatedRangeInput .animatedRangeInputLevel::-webkit-slider-thumb": {
+diff --git a/src/styles/lightswind.css b/src/styles/lightswind.css
+index 2f2fabc7d901890c436d036067575cef837d57a6..473a850db56de642e2a3feac5956891a5aea5659 100644
+--- a/src/styles/lightswind.css
++++ b/src/styles/lightswind.css	
+@@ -165,17 +165,7 @@
+ }
+ 
+ /* Animated Gradient Border Button Property and Animation */
+-/* @property MUST be defined at the global scope, not inside a rule */
+-@property --border-angle {
+-  syntax: "<angle>";
+-  inherits: true;
+-  initial-value: 0turn;
+-}
+-@keyframes bg-spin {
+-  to {
+-    --border-angle: 1turn;
+-  }
+-}
++
+ 
+ /* Product Card Skeleton Loader Animation */
+ @keyframes skeletonLoader {

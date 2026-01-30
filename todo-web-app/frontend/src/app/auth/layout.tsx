@@ -14,6 +14,8 @@ import { FiCheckSquare } from "react-icons/fi";
 import { LuLoaderPinwheel } from "react-icons/lu";
 
 import { useSession } from "@/lib/auth-client";
+import RippleLoader from "@/components/lightswind/ripple-loader";
+import { MdEmojiEmotions } from "react-icons/md";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
 	const router = useRouter();
@@ -34,9 +36,15 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 	// Show loading while checking auth
 	if (isPending || isCheckingAuth) {
 		return (
-			<div className="flex min-h-screen items-center justify-center">
-				<LuLoaderPinwheel className="h-8 w-8 animate-spin text-primary" />
-			</div>
+            <div className="fixed inset-0 z-9999 flex items-center justify-center bg-background">
+                <RippleLoader
+                    icon={<MdEmojiEmotions />}
+                    size={400}
+                    duration={4}
+                    logoColor={{ light: "#664b31", dark: "#f2d5b8" }}
+                    rippleColor={{ light: "#946e4a", dark: "#c7a990" }}
+                />
+            </div>
 		);
 	}
 
