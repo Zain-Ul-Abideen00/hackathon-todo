@@ -9,7 +9,6 @@ import { StatsContent } from "./about/StatsContent";
 import { FeatureContent } from "./about/FeatureContent";
 import { SecurityContent } from "./about/SecurityContent";
 import { CountUp } from "@/components/lightswind/count-up";
-import { MissionCard } from "./about/MissionCard";
 
 export function About() {
     return (
