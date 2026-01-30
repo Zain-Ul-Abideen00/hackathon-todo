@@ -7,6 +7,7 @@
 import dynamic from "next/dynamic";
 import { Hero } from "@/components/landing/Hero";
 import { Navbar } from "@/components/layout/Navbar";
+import { LandingCursor } from "@/components/landing/LandingCursor";
 
 const Features = dynamic(() => import("@/components/landing/Features").then(mod => mod.Features), {
     loading: () => <div className="min-h-50" />,
@@ -26,6 +27,7 @@ export default function HomePage() {
                 <About />
             </main>
             <Footer />
+            <LandingCursor />
         </div>
     );
 }
