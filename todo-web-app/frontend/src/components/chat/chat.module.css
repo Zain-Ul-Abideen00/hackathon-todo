@@ -27,7 +27,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background-color: hsl(var(--background));
+  /* background-color: var(--chat-bg); */
+  backdrop-filter: blur(4px);
   border: 2px solid rgba(167, 137, 108, 0.3);
   box-shadow: 0 8px 30px rgba(167, 137, 108, 0.3);
   cursor: pointer;
@@ -53,10 +54,16 @@
 }
 
 /* ===========================================
-   Backdrop - Hidden on Mobile
+   Backdrop - Visible on all devices
    =========================================== */
 .backdrop {
-  display: none;
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+  /* Optional: transition opacity handled by framer-motion */
 }
 
 /* ===========================================
@@ -72,7 +79,7 @@
   display: flex;
   flex-direction: column;
   border-radius: 0;
-  background-color: hsl(var(--background));
+  background-color: var(--chat-bg);
   overflow: hidden;
   /* Enable touch interactions */
   touch-action: manipulation;
@@ -120,7 +127,7 @@
     width: min(90vw, 450px);
     height: min(85vh, 650px);
     border-radius: 24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0px 20px rgba(0, 0, 0, 0.2);
   }
 }
 
@@ -168,6 +175,6 @@
     height: 600px;
     max-height: calc(100vh - 4rem);
     border-radius: 24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0px 20px rgba(0, 0, 0, 0.2);
   }
 }

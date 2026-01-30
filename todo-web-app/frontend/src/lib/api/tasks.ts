@@ -41,6 +41,14 @@ interface PaginatedResponse<T> {
 }
 
 /**
+ * Get aggregated task statistics
+ */
+export async function getTaskStats(): Promise<Record<string, number>> {
+	const userId = await getUserId();
+	return api.get<Record<string, number>>(`/api/${userId}/tasks/stats`);
+}
+
+/**
  * Get paginated list of tasks with optional filters
  */
 export async function getTasks(params: ListTasksParams = {}): Promise<PaginatedResponse<Task>> {
@@ -49,14 +57,20 @@ export async function getTasks(params: ListTasksParams = {}): Promise<PaginatedR
 
 	// Map frontend params to backend query params
 	if (params.status && params.status !== "all") {
-		// Backend now supports exact status values: todo, in_progress, completed
 		searchParams.set("status", params.status);
 	}
 
 	if (params.sort_by) {
-		// Backend expects: created, title
-		searchParams.set("sort", params.sort_by === "created_at" ? "created" : params.sort_by);
+		// Backend expects: created, title, due_date, priority
+		const map: Record<string, string> = {
+			created_at: "created",
+		};
+		searchParams.set("sort", map[params.sort_by] || params.sort_by);
 	}
+
+    if (params.order) {
+        searchParams.set("order", params.order);
+    }
 
 	if (params.limit) {
 		searchParams.set("limit", String(params.limit));
@@ -65,6 +79,16 @@ export async function getTasks(params: ListTasksParams = {}): Promise<PaginatedR
 	if (params.cursor) {
 		searchParams.set("cursor", params.cursor);
 	}
+
+    if (params.search) {
+        searchParams.set("search", params.search);
+    }
+
+    // Check if priority is in params (need to update ListTasksParams type if incomplete)
+    // Assuming ListTasksParams might need update or we cast
+    if ((params as any).priority) {
+        searchParams.set("priority", (params as any).priority);
+    }
 
 	const query = searchParams.toString();
 	const result = await api.get<TaskListResponse>(`/api/${userId}/tasks${query ? `?${query}` : ""}`);

@@ -76,7 +76,7 @@ export function Features() {
 							stay productive
 						</span>
 					</h2>
-					<p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+					<p className="mx-auto mt-4 max-w-2xl text-sm md:text-lg text-muted-foreground">
 						Powerful features designed to help you manage your tasks more efficiently and achieve
 						your goals faster.
 					</p>
@@ -92,8 +92,8 @@ export function Features() {
 				>
 					<GlowingCards
 						enableGlow={true}
-						glowRadius={30}
-						glowOpacity={1}
+						glowRadius={40}
+						glowOpacity={5}
 						animationDuration={400}
 						gap="1.5rem"
 						responsive={true}

@@ -92,19 +92,25 @@ export const TOOL_CHOICES: ToolOption[] = [
 export const MODEL_CHOICES: ModelOption[] = [
     {
         default: true,
-        description: "MoE model with thinking mode",
+        description: "Powerful Open Model",
+        id: "groq-gpt-oss-120b",
+        label: "GPT OSS 120B",
+    },
+    {
+        default: false,
+        description: "Reasoning MoE",
         id: "groq-kimi-k2",
         label: "Groq Kimi K2",
     },
 	{
 		default: false,
-		description: "Multi-language model",
+		description: "Multilingual LLM",
 		id: "groq-llama-3.3-70b",
-		label: "Groq Llama 3.3",
+		label: "Llama 3.3",
 	},
 	{
 		default: false,
-		description: "Fast & powerful",
+		description: "Fast Multimodal",
 		id: "gemini-2.5-flash",
 		label: "Gemini Flash",
 	},
@@ -139,13 +145,6 @@ export const FONT_SOURCES = [
 		family: "Texturina",
 		src: "https://fonts.gstatic.com/s/texturina/v32/c4mM1nxpEtL3pXiAulRTkY-HGmNEX1b9NspjMwhAgliHhVrXy2eYGvUg.ttf",
 		weight: 400,
-		style: "normal" as const,
-		display: "swap" as const,
-	},
-	{
-		family: "Inter",
-		src: "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYMZg.woff2",
-		weight: 600,
 		style: "normal" as const,
 		display: "swap" as const,
 	},

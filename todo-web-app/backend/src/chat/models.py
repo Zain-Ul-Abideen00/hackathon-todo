@@ -23,6 +23,7 @@ TASK_MODELS: dict[str, tuple[str, str]] = {
     # Groq models (alternative/fallback)
     "groq-llama-3.3-70b": ("groq/llama-3.3-70b-versatile", "GROQ_API_KEY"),
     "groq-kimi-k2": ("groq/moonshotai/kimi-k2-instruct-0905", "GROQ_API_KEY"),
+    "groq-gpt-oss-120b": ("groq/openai/gpt-oss-120b", "GROQ_API_KEY"),
 }
 
 TITLE_MODELS: dict[str, tuple[str, str]] = {
@@ -33,7 +34,7 @@ TITLE_MODELS: dict[str, tuple[str, str]] = {
 }
 
 # Default model IDs
-DEFAULT_TASK_MODEL = "groq-llama-3.3-70b"
+DEFAULT_TASK_MODEL = "groq-kimi-k2"
 DEFAULT_TITLE_MODEL = "groq-llama-3.1-8b"
 
 

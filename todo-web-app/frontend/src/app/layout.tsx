@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
-import { GlobalPageLoader } from "@/components/layout/GlobalPageLoader";
+import dynamic from "next/dynamic";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { ToastProvider } from "@/components/providers/ToastProvider";
 import "@/app/globals.css";
-import { ChatBot } from "@/components/chat/ChatBot";
+import { ChatWidgetFacade } from "@/components/chat/ChatWidgetFacade";
+import Loading from "./loading";
+
+// Lazy load non-critical UI components
+// const Loader = dynamic(() => import("@/app/loading").then(mod => mod.loading));
+const ToastProvider = dynamic(() => import("@/components/providers/ToastProvider").then(mod => mod.ToastProvider));
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -39,13 +42,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <head>
-                {/* ChatKit Web Component Script - MUST be beforeInteractive */}
-                <Script
-                    src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js"
-                    strategy="beforeInteractive"
-                />
-            </head>
+            <head />
             <body
                 className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-background font-sans text-foreground antialiased`}
             >
@@ -56,9 +53,9 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <QueryProvider>
-                        <GlobalPageLoader />
+                        {/* <Loading /> */}
                         {children}
-                        <ChatBot />
+                        <ChatWidgetFacade />
                         <ToastProvider />
                     </QueryProvider>
                 </ThemeProvider>

@@ -13,7 +13,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { CiMail } from "react-icons/ci";
 import { LuLoaderPinwheel } from "react-icons/lu";
@@ -26,10 +26,13 @@ import { Label } from "@/components/lightswind/label";
 import { signUp } from "@/lib/auth-client";
 import { type SignupFormData, signupSchema } from "@/lib/schemas/auth";
 import { BsGithub, BsGoogle } from "react-icons/bs";
+import { ConfettiButton, type ConfettiButtonHandle } from "../lightswind/confetti-button";
+import { PasswordStrengthIndicator } from "../lightswind/password-strength-indicator";
 
 export function SignUpForm() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const confettiRef = useRef<ConfettiButtonHandle>(null);
 
     const {
         register,
@@ -64,6 +67,7 @@ export function SignUpForm() {
             }
 
             toast.success("Account created successfully!");
+            confettiRef.current?.triggerConfetti();
             router.push("/dashboard");
             router.refresh();
         } catch (err) {
@@ -112,19 +116,28 @@ export function SignUpForm() {
                 </div>
 
                 {/* Password */}
+                {/* Password using PasswordStrengthIndicator */}
                 <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                        <TfiLock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            id="password"
-                            type="password"
-                            placeholder="••••••••"
-                            className="pl-10"
-                            autoComplete="new-password"
-                            {...register("password")}
-                        />
-                    </div>
+                    <Controller
+                        name="password"
+                        control={control}
+                        render={({ field }) => (
+                            <PasswordStrengthIndicator
+                                label="Password"
+                                placeholder="••••••••"
+                                value={field.value}
+                                onChange={field.onChange}
+                                showScore={true}
+                                showScoreNumber={true}
+                                showVisibilityToggle={true}
+                                startIcon={<TfiLock className="h-4 w-4" />}
+                                inputProps={{
+                                    autoComplete: "new-password",
+                                    className: "pl-10",
+                                }}
+                            />
+                        )}
+                    />
                     {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
                 </div>
 
@@ -166,11 +179,11 @@ export function SignUpForm() {
                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
                             I agree to the{" "}
-                            <Link href="#" className="text-primary hover:underline">
+                            <Link href="/terms" className="text-primary hover:underline">
                                 Terms of Service
                             </Link>{" "}
                             and{" "}
-                            <Link href="#" className="text-primary hover:underline">
+                            <Link href="/privacy" className="text-primary hover:underline">
                                 Privacy Policy
                             </Link>
                         </label>
@@ -179,7 +192,13 @@ export function SignUpForm() {
                 </div>
 
                 {/* Submit */}
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <ConfettiButton
+                    ref={confettiRef}
+                    manual
+                    confettiOptions={{
+                        particleCount: 400,
+                        spread: 150
+                    }} type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? (
                         <>
                             <LuLoaderPinwheel className="mr-2 h-4 w-4 animate-spin" />
@@ -188,7 +207,7 @@ export function SignUpForm() {
                     ) : (
                         "Create account"
                     )}
-                </Button>
+                </ConfettiButton>
             </form>
 
             {/* Divider */}

@@ -15,69 +15,78 @@ import { Skeleton } from "@/components/lightswind/skeleton";
 import type { Task } from "@/types/task";
 import { TaskCard } from "./TaskCard";
 
+import { useTaskStore } from "@/stores/taskStore";
+import { cn } from "@/lib/utils";
+
 interface TaskListProps {
-	tasks: Task[] | undefined;
-	isLoading: boolean;
-	emptyMessage?: string;
+    tasks: Task[] | undefined;
+    isLoading: boolean;
+    emptyMessage?: string;
 }
 
 export function TaskList({ tasks, isLoading, emptyMessage = "No tasks found" }: TaskListProps) {
-	// Loading skeleton
-	if (isLoading) {
-		return (
-			<div className="space-y-4">
-				{[1, 2, 3, 4, 5].map((i) => (
-					<div key={i} className="rounded-lg border border-border bg-card p-4">
-						<div className="flex items-start gap-3">
-							<Skeleton className="h-5 w-5 rounded-full" />
-							<div className="flex-1 space-y-2">
-								<Skeleton className="h-5 w-3/4" />
-								<Skeleton className="h-4 w-1/2" />
-								<div className="flex gap-2">
-									<Skeleton className="h-5 w-16 rounded-full" />
-									<Skeleton className="h-5 w-20 rounded-full" />
-								</div>
-							</div>
-						</div>
-					</div>
-				))}
-			</div>
-		);
-	}
+    const { viewMode } = useTaskStore();
 
-	// Empty state
-	if (!tasks?.length) {
-		return (
-			<motion.div
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 py-16"
-			>
-				<div className="rounded-full bg-muted p-4">
-					<Inbox className="h-8 w-8 text-muted-foreground" />
-				</div>
-				<h3 className="mt-4 text-lg font-medium">{emptyMessage}</h3>
-				<p className="mt-1 text-sm text-muted-foreground">
-					Get started by creating your first task
-				</p>
-				<Link href="/tasks/new">
-					<Button className="mt-6 gap-2">
-						<Plus className="h-4 w-4" />
-						Create Task
-					</Button>
-				</Link>
-			</motion.div>
-		);
-	}
+    // Loading skeleton
+    if (isLoading) {
+        return (
+            <div className="space-y-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="rounded-lg border border-border bg-card p-4">
+                        <div className="flex items-start gap-3">
+                            <Skeleton className="h-5 w-5 rounded-full" />
+                            <div className="flex-1 space-y-2">
+                                <Skeleton className="h-5 w-3/4" />
+                                <Skeleton className="h-4 w-1/2" />
+                                <div className="flex gap-2">
+                                    <Skeleton className="h-5 w-16 rounded-full" />
+                                    <Skeleton className="h-5 w-20 rounded-full" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
 
-	// Task list
-	return (
-		<div className="space-y-4">
-			<AnimatePresence mode="popLayout">
-				{tasks.map((task) => (
-					<TaskCard key={task.id} task={task} />
-				))}
-			</AnimatePresence>
-		</div>
-	);
+    // Empty state
+    if (!tasks?.length) {
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 py-16"
+            >
+                <div className="rounded-full bg-muted p-4">
+                    <Inbox className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="mt-4 text-lg font-medium">{emptyMessage}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                    Get started by creating your first task
+                </p>
+                <Link href="/tasks/new">
+                    <Button className="mt-6 gap-2">
+                        <Plus className="h-4 w-4" />
+                        Create Task
+                    </Button>
+                </Link>
+            </motion.div>
+        );
+    }
+
+    // Task list
+    return (
+        <div className={cn(
+            viewMode === "grid"
+                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                : "space-y-4"
+        )}>
+            <AnimatePresence mode="popLayout">
+                {tasks.map((task) => (
+                    <TaskCard key={task.id} task={task} />
+                ))}
+            </AnimatePresence>
+        </div>
+    );
 }

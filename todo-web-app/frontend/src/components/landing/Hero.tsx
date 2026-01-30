@@ -8,13 +8,16 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { FiCheckCircle } from "react-icons/fi";
 import { TbArrowRightDashed } from "react-icons/tb";
 import { Button } from "@/components/lightswind/button";
-
-import ParticlesBackground from "../lightswind/particles-background";
+import { useSession } from "@/lib/auth-client";
 import SmoothCursor from "../lightswind/smooth-cursor";
-import Companies from "./Companies";
+
+const ParticlesBackground = dynamic(() => import("../lightswind/particles-background"), { ssr: false });
+const Companies = dynamic(() => import("./Companies"), { ssr: false });
+
 
 const features = [
     "Organize your tasks effortlessly",
@@ -23,9 +26,15 @@ const features = [
 ];
 
 export function Hero() {
+
+    // Connect to Better Auth
+    const { data: session } = useSession();
+    const isLoggedIn = !!session;
+    const user = session?.user;
+
     return (
-        <section className="relative flex flex-col items-center justify-center overflow-hidden px-4 pt-16">
-            <div className="mx-auto max-w-5xl text-center relative z-10">
+        <section className="relative flex flex-col items-center justify-center overflow-hidden px-4 pt-30">
+            <div className="mx-auto max-w-5xl text-center relative z-10 ">
                 {/* Background Glow */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-75 h-75 sm:w-125 sm:h-125 bg-primary/20 blur-[80px] sm:blur-[120px] rounded-full -z-10 opacity-60 pointer-events-none" />
 
@@ -34,13 +43,13 @@ export function Hero() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="my-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/50 px-4 py-1.5 text-sm text-foreground/80 backdrop-blur-md shadow-sm"
+                    className=" my-6 lg:my-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/50 px-4 py-1.5 text-sm text-foreground/80 backdrop-blur-md shadow-sm"
                 >
                     <span className="relative flex h-2 w-2">
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
                         <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                     </span>
-                    <span className="font-medium">Now with AI-powered task suggestions</span>
+                    <span className="font-medium text-[10px] md:text-base">Now with AI-powered task management</span>
                 </motion.div>
 
                 {/* Headline */}
@@ -94,15 +103,27 @@ export function Hero() {
                     transition={{ duration: 0.5, delay: 0.4 }}
                     className="mt-8 sm:mt-10 flex flex-col w-full sm:w-auto items-stretch sm:items-center justify-center gap-3 sm:flex-row sm:gap-4 px-4 sm:px-0"
                 >
-                    <Link href="/auth/signup" className="w-full sm:w-auto">
-                        <Button
-                            size="lg"
-                            className="group h-12 w-full sm:w-auto min-w-40 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300 bg-linear-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground border-0"
-                        >
-                            Get Started Free
-                            <TbArrowRightDashed className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                        </Button>
-                    </Link>
+                    {isLoggedIn && user ? (
+                        <Link href="/dashboard" className="w-full sm:w-auto">
+                            <Button
+                                size="lg"
+                                className="group h-12 w-full sm:w-auto min-w-40 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300 bg-linear-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground border-0"
+                            >
+                                Dashboard
+                                <TbArrowRightDashed className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                            </Button>
+                        </Link>
+                    ) : (
+                        <Link href="/auth/signup" className="w-full sm:w-auto">
+                            <Button
+                                size="lg"
+                                className="group h-12 w-full sm:w-auto min-w-40 px-8 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300 bg-linear-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground border-0"
+                            >
+                                Get Started Free
+                                <TbArrowRightDashed className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                            </Button>
+                        </Link>
+                    )}
                     <Link href="#features" className="w-full sm:w-auto">
                         <Button
                             variant="outline"
@@ -189,7 +210,7 @@ export function Hero() {
                     mass: 0.8,
                     restDelta: 0.001,
                 }}
-                disabled={false}
+                disabled={true}
             />
         </section>
     );

@@ -11,10 +11,12 @@
 	--chonkie-accent: rgb(167, 137, 108);
 	--chonkie-accent-hover: rgb(145, 115, 90);
 	--chonkie-border: rgb(220, 215, 200);
-	--chonkie-card: rgb(255, 252, 243);
+	--chonkie-card: rgb(255, 245, 224);
+    --chonkie-chat-bg: rgb(234, 228, 217);
 
 	/* Base theme variables */
 	--background: var(--chonkie-bg);
+    --chat-bg: var(--chonkie-chat-bg);
 	--foreground: var(--chonkie-text);
 	--card: var(--chonkie-card);
 	--card-foreground: var(--chonkie-text);
@@ -45,11 +47,13 @@
 	--chonkie-accent: rgb(199, 169, 144);
 	--chonkie-accent-hover: rgb(220, 190, 165);
 	--chonkie-border: rgb(63, 63, 63);
-	--chonkie-card: rgb(32, 32, 32);
+	--chonkie-card: rgb(22, 22, 22);
+    --chonkie-chat-bg: rgb(36, 32, 24);
 
 	/* Base theme variables */
 	--background: var(--chonkie-bg);
 	--foreground: var(--chonkie-text);
+    --chat-bg: var(--chonkie-chat-bg);
 	--card: var(--chonkie-card);
 	--card-foreground: var(--chonkie-text);
 	--popover: var(--chonkie-card);

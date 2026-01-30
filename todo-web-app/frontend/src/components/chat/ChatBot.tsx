@@ -5,7 +5,7 @@ import { useSession } from "@/lib/auth-client";
 import { useChatStore, syncThemeFromDocument } from "@/stores/chatStore";
 import { ChatKit, useChatKit } from "@openai/chatkit-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { TbMessageChatbot } from "react-icons/tb";
+
 import styles from "./chat.module.css";
 import {
     CHATKIT_API_URL,
@@ -18,20 +18,19 @@ import {
     MODEL_CHOICES,
     DISCLAIMER,
 } from "./config";
-import { AnimatePresence, motion } from "framer-motion";
+
 
 interface ChatKitSessionProps {
     storageKey: string;
     config: { url: string; domainKey: string };
     token?: string;
-    hideLauncherOnMobile?: boolean;
 }
 
 /**
  * Inner component that handles a specific chat session
  * By keying this component, we ensure useChatKit is completely reset when the user changes
  */
-const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, token, hideLauncherOnMobile }) => {
+const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, token }) => {
     // Zustand store for chat state
     const scheme = useChatStore((state) => state.scheme);
     const setScheme = useChatStore((state) => state.setScheme);
@@ -97,7 +96,7 @@ const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, tok
             density: 'spacious',
             color: {
                 grayscale: {
-                    hue: 34,
+                    hue: 40,
                     tint: scheme === 'dark' ? 4 : 9,
                     shade: scheme === 'dark' ? -1 : 3,
                 },
@@ -150,10 +149,10 @@ const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, tok
         },
     });
 
-    // Restore latest thread for authenticated users if starting new
+    // Always sync with latest server state on mount
     useEffect(() => {
         const restoreLatestThread = async () => {
-            if (!token || initialThread) return;
+            if (!token) return;
 
             try {
                 const response = await customFetch(config.url, {
@@ -170,9 +169,15 @@ const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, tok
                 const data = await response.json();
                 if (data.data && data.data.length > 0) {
                     const latestThreadId = data.data[0].id;
+                    // Always switch to latest thread on startup
                     setThreadId(latestThreadId);
                     setStoredThreadId(latestThreadId);
                     localStorage.setItem(storageKey, latestThreadId);
+                } else {
+                    // No threads found - ensure we show start screen
+                    setThreadId(null);
+                    setStoredThreadId(null);
+                    localStorage.removeItem(storageKey);
                 }
             } catch (e) {
                 console.error('[ChatKitSession] Failed to restore thread:', e);
@@ -180,67 +185,12 @@ const ChatKitSession: React.FC<ChatKitSessionProps> = ({ storageKey, config, tok
         };
 
         restoreLatestThread();
-    }, [token, initialThread, config.url, customFetch, storageKey, setThreadId, setStoredThreadId]);
+    }, [token, config.url, customFetch, storageKey, setThreadId, setStoredThreadId]);
 
     return (
-        <>
-            {/* Floating Launcher Button */}
-            <AnimatePresence>
-                {!isChatOpen && (
-                    <motion.button
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{
-                            scale: 1,
-                            opacity: 1,
-                            boxShadow: [
-                                "0 0 0 0 rgba(167, 137, 108, 0.4)",
-                                "0 0 0 15px rgba(167, 137, 108, 0)",
-                                "0 0 0 0 rgba(167, 137, 108, 0)"
-                            ]
-                        }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        transition={{
-                            boxShadow: {
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                            },
-                            scale: { duration: 0.3 }
-                        }}
-                        onClick={() => setIsChatOpen(true)}
-                        className={`${styles.launcherBtn} ${hideLauncherOnMobile ? styles.hiddenOnMobile : ''}`}
-                        aria-label="Open Chat"
-                    >
-                        <TbMessageChatbot className={styles.chatIcon} />
-                    </motion.button>
-                )}
-            </AnimatePresence>
-
-            {/* Widget Container */}
-            <AnimatePresence>
-                {isChatOpen && (
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsChatOpen(false)}
-                            className={styles.backdrop}
-                        />
-                        {/* Single container with ChatKit directly inside */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                            className={styles.widgetContainer}>
-                            <ChatKit control={control} className={styles.chatkitFull} />
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
-        </>
+        <div className="h-full w-full">
+            <ChatKit control={control} className={styles.chatkitFull} />
+        </div>
     );
 };
 
@@ -282,19 +232,12 @@ export function ChatBot() {
         ? `chatkit_thread_user_${userId}`
         : "chatkit_thread_anonymous";
 
-    // Check if we are on a dashboard page to hide the floating launcher on mobile
-    const isDashboard = pathname?.startsWith("/dashboard") ||
-        pathname?.startsWith("/tasks") ||
-        pathname?.startsWith("/calendar") ||
-        pathname?.startsWith("/settings");
-
     return (
         <ChatKitSession
             key={storageKey}
             storageKey={storageKey}
             config={{ url: CHATKIT_API_URL, domainKey: CHATKIT_DOMAIN_KEY }}
             token={jwtToken || undefined}
-            hideLauncherOnMobile={!!isDashboard}
         />
     );
 }
