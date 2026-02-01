@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "todo-frontend.fullname" . }}-config
+  labels:
+    {{- include "todo-frontend.labels" . | nindent 4 }}
+data:
+  NEXT_PUBLIC_API_URL: {{ .Values.config.apiUrl | quote }}
+  NEXT_PUBLIC_CHATKIT_URL: {{ .Values.config.chatkitUrl | quote }}
+  NEXT_PUBLIC_BETTER_AUTH_URL: {{ .Values.config.betterAuthUrl | quote }}
+  NEXT_PUBLIC_CHATKIT_DOMAIN_KEY: {{ .Values.config.chatkitDomainKey | quote }}

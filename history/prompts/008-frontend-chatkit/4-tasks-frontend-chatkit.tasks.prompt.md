@@ -1,5 +1,5 @@
 ---
-id: "052-tasks-frontend-chatkit"
+id: "4"
 title: "Generating Tasks for Frontend ChatKit"
 stage: "tasks"
 date: "2026-01-18"

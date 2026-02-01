@@ -1,8 +1,8 @@
 # =============================================================================
-# Hugging Face Spaces - Production Dockerfile
+# Production Dockerfile - FastAPI Backend
 # =============================================================================
-# Multi-stage build for FastAPI backend deployment on Hugging Face Spaces
-# Port: 7860 (required by HF Spaces)
+# Multi-stage build for FastAPI backend deployment
+# Port: Configurable via PORT env var (default 8000 for K8s, HF sets 7860)
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -42,15 +42,18 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
+# Configurable port (default 8000 for K8s, HF Spaces auto-sets to 7860)
+ENV PORT=8000
+
 # Switch to non-root user
 USER appuser
 
-# Expose Hugging Face Spaces required port
-EXPOSE 7860
+# Expose port (documentation only, actual port from $PORT)
+EXPOSE 8000
 
-# Health check using existing endpoint
+# Health check using dynamic port
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:7860/api/health')" || exit 1
+    CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\", 8000)}/api/health')" || exit 1
 
-# Start FastAPI with uvicorn
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "7860"]
+# Start FastAPI with uvicorn using PORT env var
+CMD sh -c "uvicorn src.main:app --host 0.0.0.0 --port ${PORT}"

@@ -1,0 +1,26 @@
+# Global Minikube-specific values
+# Use with: helm install -f values-local.yaml
+
+# Minikube-specific overrides for backend
+backend:
+  image:
+    pullPolicy: Never
+  service:
+    type: NodePort
+    nodePort: 30800
+  config:
+    environment: development
+    corsOrigins: "http://localhost:30300"
+
+# Minikube-specific overrides for frontend
+frontend:
+  image:
+    pullPolicy: Never
+  service:
+    type: NodePort
+    nodePort: 30300
+  config:
+    apiUrl: "http://todo-backend:8000"
+    chatkitUrl: "http://todo-backend:8000/api/chat"
+    betterAuthUrl: "http://localhost:30300"
+    chatkitDomainKey: "localhost"

@@ -1,0 +1,56 @@
+# Backend Helm Chart Values
+# Todo Chatbot - FastAPI Backend
+
+# Replica count
+replicaCount: 1
+
+# Name overrides
+nameOverride: ""
+fullnameOverride: ""
+
+# Image configuration
+image:
+  repository: todo-backend
+  tag: "latest"
+  pullPolicy: Never  # Use Never for Minikube local images
+
+# Service configuration
+service:
+  type: NodePort
+  port: 8000
+  targetPort: 8000
+  nodePort: 30800  # Fixed NodePort for Minikube access
+
+# Resource limits and requests
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+# Probe configuration
+probes:
+  liveness:
+    path: /api/health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    failureThreshold: 5
+  readiness:
+    path: /api/health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    failureThreshold: 5
+
+# ConfigMap values (non-sensitive)
+config:
+  corsOrigins: "http://localhost:3000,http://127.0.0.1:3000,http://localhost:30300,http://127.0.0.1:30300,http://192.168.49.2:30300"
+  environment: "development"
+
+# Secret values (sensitive - pass via --set or external secrets)
+secrets:
+  databaseUrl: ""
+  betterAuthSecret: ""
+  geminiApiKey: ""
+  groqApiKey: ""

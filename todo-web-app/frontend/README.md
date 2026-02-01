@@ -24,6 +24,10 @@ A modern, full-stack task management application built with **Next.js 16**, **Re
 - **[Zod 4](https://zod.dev/)** - Schema validation
 - **[React Hook Form 7](https://react-hook-form.com/)** - Form handling
 
+### AI Chat
+- **[@openai/chatkit-react](https://github.com/openai/chatkit)** - AI chat widget integration
+- **LiteLLM Backend** - Gemini/Groq model support via backend API
+
 ### Development Tools
 - **[Biome 2.3](https://biomejs.dev/)** - Linting and formatting
 - **[next-devtools-mcp](https://github.com/modelcontextprotocol/servers/tree/main/src/next-devtools)** - Next.js MCP integration for AI agents
@@ -53,6 +57,10 @@ frontend/
 │   │
 │   ├── components/
 │   │   ├── auth/                 # Auth components (LoginForm, SignupForm)
+│   │   ├── chat/                 # AI chat components
+│   │   │   ├── ChatBot.tsx       # Main ChatKit component
+│   │   │   ├── ChatWidgetFacade.tsx  # Floating widget wrapper
+│   │   │   └── config.ts         # ChatKit configuration
 │   │   ├── landing/              # Landing page sections (Hero, Features, CTA)
 │   │   ├── layout/               # Layout components
 │   │   │   ├── DashboardHeader.tsx      # Header with breadcrumb, search, user menu
@@ -95,6 +103,13 @@ frontend/
 ---
 
 ## ✨ Features
+
+### 🤖 AI Chatbot
+- **Natural Language Tasks**: Create, update, and manage tasks through conversation
+- **Floating Chat Widget**: Beautiful ChatBot component with backdrop blur
+- **Thread Management**: Persistent conversation history
+- **Tool Execution Feedback**: Real-time status updates for task operations
+- **Responsive Design**: Works seamlessly on desktop and mobile
 
 ### 🔐 Authentication
 - **Email/Password Authentication** via Better Auth
@@ -344,3 +359,9 @@ This project is part of the GIAIC Q4 Hackathon.
 - **Better Auth** - Authentication library
 - **Lightswind** - UI component library
 - **Vercel** - Deployment platform
+
+---
+
+## 👨‍💻 Author
+
+**Zain UL Abideen** ([@Zain-Ul-Abideen00](https://github.com/Zain-Ul-Abideen00))
