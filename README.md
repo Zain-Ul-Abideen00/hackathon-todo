@@ -1,166 +1,226 @@
 # Hackathon Todo Project
 
-A comprehensive todo management system built for the GIAIC Q4 Hackathon (Project 2). This repository contains a terminal-based todo application with a rich, interactive user interface built using Python's Textual framework.
+A comprehensive todo management system built for the **GIAIC Q4 Hackathon (Project 2)**. This repository contains two applications:
 
-## Project Overview
+1. **Todo Console App** - A terminal-based todo application with a rich, interactive TUI built using Python's Textual framework
+2. **Todo Web App** - A full-stack AI-powered web application with Next.js 16, FastAPI, and an intelligent chatbot assistant
 
-This project implements a **Terminal User Interface (TUI) Todo Application** that provides a modern, keyboard-driven experience for task management. The application emphasizes simplicity, type safety, and excellent user experience in the terminal.
+---
 
-### Key Features
+## 🌟 Project Overview
 
-- Rich terminal user interface powered by Textual
-- Complete keyboard navigation (no mouse required)
-- Full CRUD operations (Create, Read, Update, Delete) for tasks
-- Task filtering by status (All, Pending, Completed)
-- Persistent local storage using JSON
+### Todo Web Application (Primary)
+
+The web application is an **AI-powered task management system** featuring:
+
+- **🤖 AI Chatbot**: Natural language task management via ChatKit + LiteLLM (Gemini/Groq)
+- **📋 Smart Task Management**: Create, update, delete, and filter tasks with a beautiful UI
+- **🔐 Secure Authentication**: Better Auth with JWT and PostgreSQL session storage
+- **🎨 Modern UI/UX**: Lightswind components, Framer Motion animations, dark/light themes
+- **📱 Responsive Design**: Desktop sidebar + mobile bottom navigation
+- **🚀 Production Ready**: Docker support and Kubernetes deployment (Helm/Minikube)
+
+### Todo Console App (TUI)
+
+A **Terminal User Interface** application providing:
+
+- Rich terminal interface powered by Textual
+- Complete keyboard navigation
+- Full CRUD operations with local JSON persistence
 - Type-safe data models with Pydantic
-- Test-driven development approach
 
-## Repository Structure
+---
+
+## 🏗 Repository Structure
 
 ```
 hackathon-todo/
-├── .specify/                    # Project configuration and templates
-│   ├── memory/                  # Project constitution and guidelines
-│   └── templates/               # Document templates
-├── specs/                       # Feature specifications
-│   └── 001-todo-tui-app/       # Todo TUI App specification
-│       ├── spec.md             # Feature requirements
-│       ├── plan.md             # Implementation plan
-│       ├── tasks.md            # Development tasks
-│       └── data-model.md       # Data model documentation
-├── todo-console-app/           # Main application directory
-│   ├── src/                    # Source code
-│   │   ├── main.py            # Application entry point
-│   │   ├── models.py          # Data models (Pydantic)
-│   │   ├── store.py           # Persistence layer
-│   │   └── tui.py             # UI components (Textual)
-│   ├── tests/                 # Test suite
-│   ├── pyproject.toml         # Project configuration
-│   └── README.md              # Application-specific documentation
-├── CLAUDE.md                  # AI assistant guidelines
-└── README.md                  # This file
+├── todo-web-app/                 # Full-stack web application
+│   ├── frontend/                 # Next.js 16 + React 19 + Tailwind v4
+│   ├── backend/                  # FastAPI + SQLModel + ChatKit
+│   ├── k8s/                      # Kubernetes Helm charts
+│   └── docker-compose.yml        # Local development orchestration
+│
+├── todo-console-app/             # TUI application
+│   ├── src/                      # Source code (Textual TUI)
+│   ├── tests/                    # Test suite
+│   └── pyproject.toml            # Python dependencies
+│
+├── specs/                        # Feature specifications (SDD)
+│   ├── 001-todo-tui-app/         # Console app specification
+│   ├── 002-project-foundation/   # Web app foundation
+│   ├── 003-database-schema/      # Database schema design
+│   ├── 004-task-api/             # RESTful API spec
+│   ├── 005-jwt-auth/             # Authentication spec
+│   ├── 006-frontend-core/        # Frontend core features
+│   ├── 007-backend-chatbot/      # AI chatbot backend
+│   ├── 008-frontend-chatkit/     # ChatKit frontend integration
+│   └── ...                       # Additional feature specs
+│
+├── .specify/                     # Project configuration & templates
+│   └── memory/constitution.md    # Development guidelines
+│
+├── history/                      # Development history & ADRs
+└── GEMINI.md / CLAUDE.md         # AI assistant guidelines
 ```
 
-## Getting Started
+---
 
-### Prerequisites
+## 🚀 Quick Start
 
-- Python 3.12 or higher
-- `uv` (recommended for dependency management) or `pip`
+### Todo Web App (Recommended)
 
-### Installation
+```bash
+# 1. Navigate to web app
+cd todo-web-app
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/Zain-Ul-Abideen00/hackathon-todo.git
-   cd hackathon-todo
-   ```
+# 2. Start with Docker Compose
+docker-compose up --build
+# Frontend → http://localhost:3000
+# Backend  → http://localhost:8000/docs
 
-2. Navigate to the application directory:
-   ```bash
-   cd todo-console-app
-   ```
+# OR start services individually:
 
-3. Install dependencies:
-   ```bash
-   uv sync
-   ```
+# Backend
+cd backend
+cp .env.example .env  # Configure environment
+uv sync
+uv run uvicorn src.main:app --reload
 
-### Running the Application
+# Frontend
+cd frontend
+cp .env.example .env.local  # Configure environment
+pnpm install
+pnpm dev
+```
 
-Launch the Todo TUI App:
+### Todo Console App
+
 ```bash
 cd todo-console-app
+uv sync
 uv run python src/main.py
 ```
 
-## Usage
+---
 
-Once the application is running, use these keyboard shortcuts:
+## 🛠 Technology Stack
+
+### Web Application
+
+| Layer | Technologies |
+|-------|--------------|
+| **Frontend** | Next.js 16, React 19, TypeScript, Tailwind CSS v4, Lightswind UI, Framer Motion |
+| **Backend** | FastAPI, SQLModel, asyncpg, Alembic, Pydantic |
+| **Authentication** | Better Auth, JWT, PostgreSQL sessions |
+| **AI/Chat** | OpenAI ChatKit, LiteLLM (Gemini/Groq), Agents SDK, MCP Tools |
+| **Database** | Neon PostgreSQL (production), SQLite (testing) |
+| **DevOps** | Docker, Kubernetes, Helm, Minikube |
+
+### Console Application
+
+| Layer | Technologies |
+|-------|--------------|
+| **Framework** | Python 3.12+, Textual (TUI) |
+| **Data** | Pydantic, JSON persistence |
+| **Testing** | pytest |
+
+---
+
+## 📚 Documentation
+
+### Web Application
+- [Web App README](todo-web-app/README.md) - Quick start and architecture
+- [Frontend README](todo-web-app/frontend/README.md) - Next.js application details
+- [Backend README](todo-web-app/backend/README.md) - FastAPI API documentation
+
+### Console Application
+- [Console App README](todo-console-app/README.md) - TUI application guide
+
+### Specifications
+- [Project Foundation](specs/002-project-foundation/spec.md) - Web app requirements
+- [Task API](specs/004-task-api/spec.md) - RESTful API specification
+- [Backend Chatbot](specs/007-backend-chatbot/spec.md) - AI chatbot implementation
+- [Project Constitution](.specify/memory/constitution.md) - Development principles
+
+---
+
+## ⌨️ Console App Keyboard Shortcuts
 
 | Key | Action |
 |-----|--------|
 | `a` | Add a new task |
 | `e` | Edit the selected task |
-| `d` | Delete the selected task (with confirmation) |
-| `c` | Toggle task completion status |
-| `↑` / `↓` | Navigate through tasks |
-| `Tab` | Switch between filters (All/Pending/Completed) |
-| `Enter` | Confirm actions |
-| `Esc` | Cancel or go back |
+| `d` | Delete the selected task |
+| `c` | Toggle task completion |
+| `↑/↓` | Navigate through tasks |
+| `Tab` | Switch filters (All/Pending/Completed) |
 | `q` | Quit the application |
 
-## Development
+---
+
+## 🧪 Development
 
 ### Project Philosophy
 
-This project follows the **Spec-Driven Development (SDD)** methodology with these core principles:
+This project follows **Spec-Driven Development (SDD)** with:
 
-1. **Textual Framework First**: Rich TUI experience using Textual
-2. **Keyboard-Centric Navigation**: Complete keyboard control
-3. **Modular & Type-Safe**: Clean architecture with Pydantic validation
-4. **Test-Driven Development**: All features backed by tests
-5. **Simple Persistence**: JSON-based local storage
-6. **Simplicity**: YAGNI principles guide all design decisions
-
-See [.specify/memory/constitution.md](.specify/memory/constitution.md) for the complete development guidelines.
+1. **Feature Specifications First**: All features documented before implementation
+2. **Test-Driven Development**: Red → Green → Refactor cycle
+3. **Type Safety**: TypeScript (frontend) and Pydantic (backend)
+4. **Modular Architecture**: Clean separation of concerns
+5. **AI-Assisted Development**: Gemini/Claude integration for coding support
 
 ### Running Tests
 
-Execute the test suite:
 ```bash
+# Backend tests
+cd todo-web-app/backend
+uv run pytest -v
+
+# Console app tests
 cd todo-console-app
 uv run pytest
 ```
 
-### Architecture
+### Code Quality
 
-The application follows a clean, modular architecture:
+```bash
+# Frontend linting/formatting
+cd todo-web-app/frontend
+pnpm lint
+pnpm format
 
-- **Models** (`models.py`): Pydantic data models for type-safe task representation
-- **Store** (`store.py`): Repository pattern for data persistence
-- **TUI** (`tui.py`): Textual-based user interface components
-- **Main** (`main.py`): Application entry point and orchestration
+# Backend linting/formatting
+cd todo-web-app/backend
+uv run ruff check src/
+uv run ruff format .
+```
 
-### Technology Stack
+---
 
-- **Python 3.12+**: Modern Python features and type hints
-- **Textual**: Rich terminal UI framework
-- **Pydantic**: Data validation and settings management
-- **pytest**: Testing framework
-- **uv**: Fast, reliable dependency management
+## 🤝 Contributing
 
-## Documentation
-
-- [Application README](todo-console-app/README.md) - Detailed application documentation
-- [Feature Specification](specs/001-todo-tui-app/spec.md) - Requirements and user stories
-- [Implementation Plan](specs/001-todo-tui-app/plan.md) - Technical architecture
-- [Development Tasks](specs/001-todo-tui-app/tasks.md) - Tracked development tasks
-- [Project Constitution](.specify/memory/constitution.md) - Development principles
-
-## Contributing
-
-This is a hackathon project developed as part of GIAIC Quarter 4. Contributions follow the TDD approach:
+This hackathon project follows TDD principles:
 
 1. Write failing tests (Red)
 2. Implement minimal code to pass (Green)
 3. Refactor for quality (Refactor)
 
 All code must include:
-- Type hints
+- Type hints / TypeScript types
 - Docstrings (Google style)
 - Corresponding tests
 - Constitution compliance
 
-## License
+---
+
+## 📄 License
 
 This project is developed as part of the GIAIC Q4 Hackathon.
 
-## Author
-
-**Zain UL Abideen** ([@Zain-Ul-Abideen00](https://github.com/Zain-Ul-Abideen00))
-
 ---
 
-*Generated with [Claude Code](https://claude.ai/code)*
+## 👨‍💻 Author
+
+**Zain UL Abideen** ([@Zain-Ul-Abideen00](https://github.com/Zain-Ul-Abideen00))

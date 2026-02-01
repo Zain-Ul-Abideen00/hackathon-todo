@@ -6,22 +6,44 @@ app_port: 7860
 
 # Todo Web App - Backend
 
-## Overview
+FastAPI backend for the Todo Web Application with async PostgreSQL support and AI-powered chatbot integration.
 
-FastAPI backend for the Todo Web Application with async PostgreSQL support.
+---
 
-## Technology Stack
+## ✨ Overview
 
+This backend provides:
+- **RESTful Task API**: Full CRUD with cursor-based pagination
+- **AI Chatbot**: ChatKit server with LiteLLM agent (Gemini/Groq support)
+- **Authentication**: JWT verification compatible with Better Auth
+- **Rate Limiting**: 100 requests/minute per user
+
+---
+
+## 🛠 Technology Stack
+
+### Core
 - **Framework**: FastAPI with async support
 - **ORM**: SQLModel (SQLAlchemy + Pydantic)
 - **Database**: Neon PostgreSQL (asyncpg driver)
 - **Migrations**: Alembic (async template)
-- **Auth**: JWT verification (shared secret with Better Auth)
+
+### Authentication & Security
+- **JWT**: python-jose for token verification
 - **Rate Limiting**: slowapi (100 req/min per user)
+- **CORS**: Configurable origins
 
-## Project Structure
+### AI Chatbot (Phase 3)
+- **[OpenAI ChatKit](https://github.com/openai/chatkit)**: Chat server implementation
+- **[OpenAI Agents SDK](https://github.com/openai/agents)**: Agent framework with tool support
+- **[LiteLLM](https://github.com/BerriAI/litellm)**: Multi-provider LLM gateway (Gemini, Groq)
+- **MCP**: Model Context Protocol for tool definitions
 
-```text
+---
+
+## 📁 Project Structure
+
+```
 backend/
 ├── src/
 │   ├── main.py              # FastAPI app entry point
@@ -30,6 +52,14 @@ backend/
 │   │   └── routes/
 │   │       ├── health.py    # Health check endpoint
 │   │       └── tasks.py     # Task CRUD endpoints
+│   ├── chat/                # 🤖 AI Chatbot module
+│   │   ├── server.py        # ChatKitServer implementation
+│   │   ├── agent.py         # LiteLLM agent with tool support
+│   │   ├── tools.py         # MCP tools (add_task, list_tasks, etc.)
+│   │   ├── store.py         # Thread/message persistence
+│   │   ├── models.py        # Chat data models
+│   │   ├── routes.py        # /api/chat endpoints
+│   │   └── title_agent.py   # Auto-generate thread titles
 │   ├── models/
 │   │   └── task.py          # Task model with indexes
 │   ├── schemas/
@@ -38,33 +68,50 @@ backend/
 │   ├── db/
 │   │   ├── connection.py    # Async engine with SSL
 │   │   └── dependencies.py  # FastAPI session dependency
-│   ├── auth/                # JWT verification (Module 4)
+│   ├── auth/                # JWT verification
 │   └── services/
 │       └── task_service.py  # Task CRUD operations
 ├── alembic/                 # Database migrations
 ├── tests/                   # pytest tests
+├── Dockerfile               # Production container
 └── pyproject.toml           # Dependencies & config
 ```
 
-## Environment Variables
+---
+
+## ⚙️ Environment Variables
 
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `DATABASE_URL` | Neon PostgreSQL connection string | ✅ |
 | `BETTER_AUTH_SECRET` | Shared JWT secret (min 32 chars) | ✅ |
 | `CORS_ORIGINS` | Allowed frontend origins | ✅ |
-| `ENVIRONMENT` | development / production | ✅ |
+| `ENVIRONMENT` | `development` / `production` | ✅ |
+| `GEMINI_API_KEY` | Google Gemini API key | For AI |
+| `GROQ_API_KEY` | Groq API key (optional fallback) | For AI |
 
-## Development Commands
+---
+
+## 🚀 Development
+
+### Installation
 
 ```bash
 # Install dependencies
 uv sync
 
+# Run database migrations
+uv run alembic upgrade head
+
 # Start development server
 uv run uvicorn src.main:app --reload
+# → http://localhost:8000/docs
+```
 
-# Run linting
+### Commands
+
+```bash
+# Linting
 uv run ruff check src/
 
 # Format code
@@ -72,9 +119,14 @@ uv run ruff format .
 
 # Run tests
 uv run pytest -v
+
+# Run tests with coverage
+uv run pytest --cov=src
 ```
 
-## API Endpoints
+---
+
+## 🔌 API Endpoints
 
 ### Health Check
 
@@ -84,71 +136,87 @@ uv run pytest -v
 
 ### Task Management
 
-All task endpoints require the `user_id` in the URL path. Rate limited to 100 requests/minute per user.
+All task endpoints require the `user_id` in the URL path. Rate limited to 100 req/min per user.
 
 | Method | Endpoint | Description | Status |
 |--------|----------|-------------|--------|
 | POST | `/api/{user_id}/tasks` | Create a new task | 201 |
-| GET | `/api/{user_id}/tasks` | List tasks with pagination | 200 |
-| GET | `/api/{user_id}/tasks/{task_id}` | Get a single task | 200 |
-| PUT | `/api/{user_id}/tasks/{task_id}` | Update a task | 200 |
-| DELETE | `/api/{user_id}/tasks/{task_id}` | Delete a task | 200 |
-| PATCH | `/api/{user_id}/tasks/{task_id}/complete` | Toggle completion | 200 |
+| GET | `/api/{user_id}/tasks` | List tasks (paginated) | 200 |
+| GET | `/api/{user_id}/tasks/{id}` | Get single task | 200 |
+| PUT | `/api/{user_id}/tasks/{id}` | Update task | 200 |
+| DELETE | `/api/{user_id}/tasks/{id}` | Delete task | 200 |
+| PATCH | `/api/{user_id}/tasks/{id}/complete` | Toggle completion | 200 |
 
-### Query Parameters for GET /tasks
+#### Query Parameters for List Tasks
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `status` | string | `all` | Filter: `all`, `pending`, `completed` |
-| `sort` | string | `created` | Sort by: `created` (newest first), `title` (alphabetical) |
-| `cursor` | string | null | Pagination cursor for next page |
+| `sort` | string | `created` | Sort: `created`, `title` |
+| `cursor` | string | null | Pagination cursor |
 | `limit` | int | 20 | Items per page (1-100) |
 
-### Request/Response Examples
+### AI Chat
 
-#### Create Task
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/chat/send` | Send message to AI assistant |
+| GET | `/api/chat/threads` | List user's chat threads |
+| GET | `/api/chat/threads/{id}` | Get thread with messages |
+| DELETE | `/api/chat/threads/{id}` | Delete a thread |
 
-```bash
-curl -X POST http://localhost:8000/api/test-user/tasks \
-  -H "Content-Type: application/json" \
-  -d '{"title": "Buy groceries", "description": "Milk, eggs, bread"}'
+---
+
+## 🤖 AI Chatbot Module
+
+### Architecture
+
+```
+┌──────────────────────────────────────────────┐
+│              ChatKitServer                    │
+│  ┌─────────────┐    ┌─────────────────────┐  │
+│  │   Store     │    │      Agent          │  │
+│  │  (Threads   │◄───│  (LiteLLM +         │  │
+│  │  Messages)  │    │   MCP Tools)        │  │
+│  └──────┬──────┘    └─────────┬───────────┘  │
+│         │                     │              │
+│         ▼                     ▼              │
+│    PostgreSQL           Gemini / Groq       │
+└──────────────────────────────────────────────┘
 ```
 
-Response (201):
-```json
-{
-  "id": 1,
-  "user_id": "test-user",
-  "title": "Buy groceries",
-  "description": "Milk, eggs, bread",
-  "completed": false,
-  "created_at": "2026-01-08T16:00:00Z",
-  "updated_at": "2026-01-08T16:00:00Z"
-}
+### Available MCP Tools
+
+The AI agent can execute these task management operations:
+
+| Tool | Description |
+|------|-------------|
+| `add_task` | Create a new task with title and description |
+| `list_tasks` | List tasks with optional status filter |
+| `update_task` | Update task title, description, or completion |
+| `delete_task` | Delete a task by ID |
+| `toggle_task` | Toggle task completion status |
+| `get_task` | Get details of a specific task |
+
+### Example Chat Interactions
+
+```
+User: "Add a task to buy groceries"
+AI: ✅ Created task "Buy groceries" (ID: 42)
+
+User: "What tasks do I have pending?"
+AI: You have 3 pending tasks:
+    1. Buy groceries
+    2. Finish project report
+    3. Call dentist
+
+User: "Mark the groceries task as done"
+AI: ✅ Marked "Buy groceries" as completed
 ```
 
-#### List Tasks with Filtering
+---
 
-```bash
-curl "http://localhost:8000/api/test-user/tasks?status=pending&sort=title&limit=10"
-```
-
-Response (200):
-```json
-{
-  "tasks": [...],
-  "next_cursor": "eyJpZCI6MTB9",
-  "has_more": true
-}
-```
-
-#### Toggle Completion
-
-```bash
-curl -X PATCH http://localhost:8000/api/test-user/tasks/1/complete
-```
-
-## Database Migrations
+## 📦 Database Migrations
 
 ```bash
 # Apply all migrations
@@ -162,33 +230,33 @@ uv run alembic revision --autogenerate -m "description"
 
 # View current revision
 uv run alembic current
-
-# View migration history
-uv run alembic history
 ```
 
-## Task Service API
+---
 
-The task service (`src/services/task_service.py`) provides:
+## 📚 API Documentation
 
-- `create_task(session, task_data, user_id)` - Create new task
-- `get_task(session, task_id, user_id)` - Get task with ownership check
-- `update_task(session, task_id, user_id, task_data)` - Update task
-- `delete_task(session, task_id, user_id)` - Delete task
-- `list_tasks_by_user(session, user_id, completed=None)` - List with optional filter
-- `list_tasks_paginated(session, user_id, ...)` - Cursor-based pagination with sorting
-- `toggle_task_completion(session, task_id, user_id)` - Toggle completed status
+When the server is running:
 
-All operations enforce user data isolation by requiring `user_id` parameter.
-
-## API Documentation
-
-When the server is running, access:
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
-## Related Documentation
+---
 
-- [spec.md](../../specs/004-task-api/spec.md) - API specification
-- [plan.md](../../specs/004-task-api/plan.md) - Implementation plan
-- [openapi.yaml](../../specs/004-task-api/contracts/openapi.yaml) - OpenAPI contract
+## 📚 Related Documentation
+
+- [Task API Specification](../../specs/004-task-api/spec.md)
+- [Backend Chatbot Specification](../../specs/007-backend-chatbot/spec.md)
+- [OpenAPI Contract](../../specs/004-task-api/contracts/openapi.yaml)
+
+---
+
+## 📄 License
+
+This project is developed as part of the GIAIC Q4 Hackathon.
+
+---
+
+## 👨‍💻 Author
+
+**Zain UL Abideen** ([@Zain-Ul-Abideen00](https://github.com/Zain-Ul-Abideen00))

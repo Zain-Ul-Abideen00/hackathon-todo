@@ -1,17 +1,19 @@
 <!--
 SYNC IMPACT REPORT
-- Version change: 2.0.0 -> 3.0.0 (MAJOR: AI Chatbot Extension)
+- Version change: 3.0.0 -> 4.0.0 (MAJOR: Kubernetes Deployment Extension)
 - Modified Principles:
-  - "Agentic Development" → EXPANDED (added ChatKit, MCP, LiteLLM agents)
+  - "Agentic Development" → EXPANDED (added K8s agents, Docker AI, kubectl-ai)
+  - "Project Structure" → EXPANDED (added k8s/ directory)
+  - "Tooling & Environment" → EXPANDED (added Docker, Helm, Minikube)
 - Added Principles:
-  - XIII. ChatKit Integration (OpenAI ChatKit Backend & Frontend)
-  - XIV. AI Agent Architecture (OpenAI Agents SDK + LiteLLM)
-  - XV. MCP Tool Design (Model Context Protocol wrappers)
-  - XVI. Conversation Persistence (Database-backed threads)
+  - XVII. Docker Containerization (Production Images)
+  - XVIII. Helm Chart Architecture (Package Management)
+  - XIX. Kubernetes Deployment (Local K8s with Minikube)
+  - XX. Environment Configuration Strategy (ConfigMaps/Secrets)
 - Added Sections:
-  - AI/Chat Technology Stack
-  - MCP Tools Specification
-  - New Environment Variables for AI
+  - Infrastructure/Deployment Stack
+  - Kubernetes Resource Specifications
+  - Minikube-Specific Configuration
 - Removed Sections: None
 - Templates requiring updates:
   ✅ plan-template.md - No changes required (generic structure)
@@ -19,7 +21,7 @@ SYNC IMPACT REPORT
   ✅ tasks-template.md - No changes required (generic structure)
 - Follow-up TODOs: None
 -->
-# Phase 3: AI-Powered Todo Chatbot Constitution
+# Phase 4: Local Kubernetes Deployment Constitution
 
 ## Core Principles
 
@@ -98,6 +100,8 @@ Security MUST be a primary consideration in all development decisions.
 - **Rate Limiting**: Implement rate limiting on authentication AND chat endpoints.
 - **HTTPS Only**: All production traffic MUST use HTTPS.
 - **AI Safety**: Validate and sanitize AI responses before displaying to users.
+- **Container Security**: Run containers as non-root user; use read-only file systems where possible.
+- **K8s Secrets**: NEVER store secrets in ConfigMaps; use Kubernetes Secrets only.
 
 **Rationale**: Defense in depth prevents single points of failure. Validation at both layers catches malicious and malformed input.
 
@@ -116,6 +120,7 @@ TDD is MANDATORY for all new functionality.
 - **Frontend**: Vitest for unit tests
 - **E2E**: Playwright for full user flows with browser automation
 - **Coverage Target**: Minimum 80% code coverage
+- **Infrastructure**: Helm lint for chart validation; kubectl dry-run for manifests
 
 Code without corresponding tests is NOT considered "done".
 
@@ -132,6 +137,7 @@ Type safety MUST be enforced across the entire stack.
 - **API Contracts**: Shared types or OpenAPI schemas to ensure frontend/backend alignment.
 - **Database**: SQLModel provides type-safe database operations.
 - **AI Tools**: MCP tool parameters MUST have Pydantic validation.
+- **Helm Charts**: Use typed values.yaml with schema validation where possible.
 
 **Rationale**: Type safety catches errors at compile time, reducing runtime bugs and improving developer experience.
 
@@ -142,10 +148,11 @@ Type safety MUST be enforced across the entire stack.
 Documentation MUST be maintained alongside code.
 
 - **Docstrings**: All public functions, classes, and modules MUST have docstrings (Google style).
-- **README**: Each project (frontend, backend) MUST have setup instructions and usage examples.
+- **README**: Each project (frontend, backend, k8s) MUST have setup instructions and usage examples.
 - **API Docs**: OpenAPI documentation auto-generated from FastAPI.
 - **Commit Messages**: MUST follow conventional commits format.
 - **Code Comments**: Include comments for non-obvious logic; avoid redundant comments.
+- **Deployment Docs**: K8s deployment instructions MUST be in README with step-by-step commands.
 
 **Rationale**: Documentation reduces onboarding time and serves as authoritative reference.
 
@@ -161,6 +168,8 @@ Performance MUST be considered in architecture and implementation.
 - **Caching Strategy**: Implement caching for frequently accessed, rarely changing data.
 - **Bundle Size**: Monitor and minimize client-side JavaScript bundle.
 - **Streaming**: Use SSE streaming for real-time AI responses.
+- **Container Size**: Docker images MUST be optimized for minimal size (multi-stage builds).
+- **Resource Limits**: All K8s deployments MUST have CPU/memory requests and limits.
 
 **Rationale**: Performance directly impacts user experience and SEO rankings.
 
@@ -197,6 +206,13 @@ Development tooling MUST be consistent across the team.
 - **Linting**: ESLint with Next.js config
 - **Formatting**: Prettier
 
+**Infrastructure** (NEW for Phase 4):
+- **Container Runtime**: Docker Desktop or Docker Engine
+- **Kubernetes**: Minikube for local development
+- **Package Manager**: Helm 3.x for Kubernetes package management
+- **kubectl**: Latest stable for K8s CLI operations
+- **kubectl-ai**: Optional for AI-assisted K8s operations
+
 **Rationale**: Consistent tooling eliminates "works on my machine" issues and ensures reproducible builds.
 
 ---
@@ -212,21 +228,33 @@ Development MUST leverage specialized AI agents and MCP servers.
 - `@database-architect`: Conversation persistence schema (threads, items)
 - `@nextjs-developer`: ChatKit frontend integration, useChatKit hook
 - `@ui-designer`: Chat UI styling and premium visual aesthetics
+- `@docker-expert`: Production Dockerfile creation and optimization (NEW)
+- `@kubernetes-architect`: Helm chart design and K8s architecture (NEW)
+- `@kubernetes-specialist`: Deployment operations and debugging (NEW)
+- `@deployment-engineer`: CI/CD patterns and deployment strategies (NEW)
 
 **Skills** (reference in specifications and plans):
-- `integrating-chatkit`: ChatKit patterns for frontend and backend (CRITICAL)
+- `integrating-chatkit`: ChatKit patterns for frontend and backend
 - `building-with-openai-agents`: OpenAI Agents SDK patterns with LiteLLM
 - `mcp-builder`: MCP tool implementation patterns
 - `building-with-sqlmodel-async`: Async database operations with SQLModel
 - `configuring-better-auth`: Auth implementation patterns and JWT flow
 - `building-nextjs-apps`: Next.js 16 patterns, async params, Server Actions
 - `lightswind-ui`: Premium component design patterns
+- `production-dockerfile`: Optimized Docker images with multi-stage builds (NEW)
+- `helm-chart-scaffolding`: Helm chart patterns and best practices (NEW)
+- `k8s-manifest-generator`: Kubernetes resource generation (NEW)
+- `k8s-security-policies`: Security policies for K8s deployments (NEW)
 
 **MCP Servers** (use for tooling and diagnostics):
 - `better-auth`: Guided Better Auth configuration and troubleshooting
 - `next-devtools`: Next.js runtime diagnostics, error detection, docs access
 - `playwright`: E2E browser testing and automation
 - `neon`: Database operations and connection management
+
+**AIOps Tools** (Optional for Phase 4):
+- `kubectl-ai`: Natural language K8s commands
+- Docker AI (Gordon): `docker ai "query"` for container assistance
 
 **Rationale**: Specialized agents ensure expert-level implementation in each domain. MCP servers provide authoritative tooling and documentation.
 
@@ -349,6 +377,195 @@ CREATE TABLE chatkit_items (
 
 ---
 
+### XVII. Docker Containerization
+
+Production Docker images MUST follow optimization and security best practices.
+
+**Multi-Stage Builds**:
+- **Stage 1 (Builder)**: Install dependencies, build assets
+- **Stage 2 (Runtime)**: Copy only necessary artifacts, minimal base image
+- **Backend Base**: `python:3.12-slim` for production
+- **Frontend Base**: `node:20-alpine` for production
+
+**Security Requirements**:
+- **Non-Root User**: All containers MUST run as non-root user
+- **Read-Only FS**: Use read-only file systems where possible
+- **No Shell Access**: Production images should not include unnecessary shells/tools
+- **Secrets**: NEVER bake secrets into images; use environment variables
+
+**Optimization**:
+- **Layer Caching**: Order Dockerfile instructions for optimal caching (dependencies before code)
+- **`.dockerignore`**: Exclude node_modules, .git, .env files, test fixtures
+- **Health Checks**: Include HEALTHCHECK instruction in Dockerfile
+- **Size Target**: Backend < 200MB, Frontend < 150MB
+
+**Example Backend Dockerfile Pattern**:
+```dockerfile
+# Stage 1: Build
+FROM python:3.12-slim AS builder
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN pip install uv && uv sync --frozen --no-dev
+
+# Stage 2: Runtime
+FROM python:3.12-slim AS runtime
+WORKDIR /app
+RUN useradd -r -u 1000 appuser
+COPY --from=builder /app/.venv /app/.venv
+COPY src/ ./src/
+USER appuser
+EXPOSE 8000
+HEALTHCHECK CMD curl -f http://localhost:8000/health || exit 1
+CMD [".venv/bin/uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+**Rationale**: Multi-stage builds minimize image size and attack surface. Non-root users prevent privilege escalation.
+
+---
+
+### XVIII. Helm Chart Architecture
+
+Kubernetes deployments MUST use Helm charts for package management.
+
+**Chart Structure** (per service):
+```text
+k8s/{service}/
+├── Chart.yaml              # Chart metadata (name, version, appVersion)
+├── values.yaml             # Default configuration values
+├── templates/
+│   ├── _helpers.tpl        # Template helpers
+│   ├── deployment.yaml     # Deployment resource
+│   ├── service.yaml        # Service resource
+│   ├── configmap.yaml      # ConfigMap for non-secret config
+│   ├── secret.yaml         # Secret for sensitive data
+│   ├── ingress.yaml        # Ingress (optional, for external access)
+│   └── hpa.yaml            # HorizontalPodAutoscaler (optional)
+└── .helmignore             # Files to ignore during packaging
+```
+
+**Values Configuration**:
+- **image.repository**: Container image name
+- **image.tag**: Version tag (default to Chart appVersion)
+- **image.pullPolicy**: `IfNotPresent` for remote, `Never` for local Minikube
+- **replicas**: Number of pod replicas
+- **resources.requests/limits**: CPU and memory constraints
+- **env**: Non-secret environment variables
+- **secrets**: References to Kubernetes secrets
+
+**Best Practices**:
+- **Separate charts for frontend and backend**: Independent scaling and deployment
+- **values-local.yaml**: Minikube-specific overrides
+- **Templating**: Use `{{ .Values.* }}` for all configurable values
+- **Labels**: Include standard labels (app, version, environment)
+
+**Validation**:
+- **Lint**: `helm lint k8s/{service}/` before deployment
+- **Template**: `helm template k8s/{service}/` to preview generated YAML
+- **Dry-run**: `helm install --dry-run --debug` for full validation
+
+**Rationale**: Helm charts enable versioned, reproducible, and configurable Kubernetes deployments.
+
+---
+
+### XIX. Kubernetes Deployment
+
+Local Kubernetes deployment MUST use Minikube with proper resource configuration.
+
+**Minikube Setup**:
+- **Driver**: Prefer Docker driver for consistency
+- **Resources**: Allocate minimum 4GB memory, 2 CPUs for cluster
+- **Docker Environment**: Use `eval $(minikube docker-env)` to build images locally
+- **Image Pull Policy**: Set to `Never` when using locally-built images
+
+**Required Resources**:
+
+| Resource | Purpose | Key Configuration |
+|----------|---------|-------------------|
+| Deployment | Pod lifecycle management | replicas, resource limits, probes |
+| Service | Internal networking | ClusterIP for internal, NodePort for external |
+| ConfigMap | Non-secret environment vars | NEXT_PUBLIC_*, CORS_ORIGINS |
+| Secret | Sensitive data | DATABASE_URL, API keys, BETTER_AUTH_SECRET |
+| Ingress/NodePort | External access | Use NodePort for Minikube simplicity |
+
+**Probes**:
+- **Liveness Probe**: `/health` endpoint, initial delay 30s, period 10s
+- **Readiness Probe**: `/health` endpoint, initial delay 5s, period 5s
+
+**Resource Limits** (minimum guidance):
+```yaml
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+```
+
+**Access Strategy**:
+- **NodePort**: Use `minikube service {service-name}` for direct access
+- **Tunnel**: Use `minikube tunnel` for LoadBalancer services
+- **Port Forward**: `kubectl port-forward svc/{service} {local}:{remote}` for debugging
+
+**Rationale**: Proper resource configuration ensures predictable performance and prevents resource starvation.
+
+---
+
+### XX. Environment Configuration Strategy
+
+Environment configuration MUST use Kubernetes ConfigMaps and Secrets appropriately.
+
+**Backend Environment Variables**:
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `DATABASE_URL` | Secret | Neon PostgreSQL connection string |
+| `BETTER_AUTH_SECRET` | Secret | Shared JWT secret (min 32 chars) |
+| `GEMINI_API_KEY` | Secret | LLM API key |
+| `CORS_ORIGINS` | ConfigMap | Comma-separated allowed origins |
+| `ENVIRONMENT` | ConfigMap | development, staging, production |
+
+**Frontend Environment Variables**:
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `NEXT_PUBLIC_API_URL` | ConfigMap | Backend service URL in cluster |
+| `NEXT_PUBLIC_CHATKIT_URL` | ConfigMap | Backend chat endpoint |
+| `BETTER_AUTH_SECRET` | Secret | Shared JWT secret for signing |
+
+**Implementation Pattern**:
+```yaml
+# ConfigMap for non-secret values
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  CORS_ORIGINS: "http://frontend-service:3000"
+  ENVIRONMENT: "development"
+
+# Secret for sensitive values
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-secrets
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql+asyncpg://..."
+  BETTER_AUTH_SECRET: "your-secret-min-32-chars"
+  GEMINI_API_KEY: "your-api-key"
+```
+
+**Critical Rules**:
+- NEVER store secrets in ConfigMaps
+- NEVER commit Secret manifests with real values to git
+- Use `stringData` in manifests, converted to base64 by K8s
+- Reference secrets via `secretKeyRef` in deployments
+
+**Rationale**: Proper separation of config and secrets follows K8s best practices and maintains security.
+
+---
+
 ## Technology Stack
 
 ### Frontend (Next.js 16+)
@@ -370,7 +587,7 @@ CREATE TABLE chatkit_items (
 - **Chat**: OpenAI ChatKit (ChatKitServer)
 - **AI**: OpenAI Agents SDK + LiteLLM
 
-### AI/Chat Stack (NEW)
+### AI/Chat Stack
 - **Chat UI**: OpenAI ChatKit
 - **Agent SDK**: OpenAI Agents SDK
 - **Model Provider**: LiteLLM (Gemini backend)
@@ -380,17 +597,19 @@ CREATE TABLE chatkit_items (
 ### Database
 - **Provider**: Neon PostgreSQL
 - **Driver**: asyncpg (async)
-- **New Tables**: chatkit_threads, chatkit_items
+- **Tables**: users, tasks, chatkit_threads, chatkit_items
 
 ### Authentication
 - **Frontend**: Better Auth with JWT plugin
 - **Backend**: JWT verification middleware
 - **Algorithm**: HS256 with shared secret
 
-### Deployment
-- **Frontend**: Vercel
-- **Backend**: Railway or Render
-- **Database**: Neon (serverless PostgreSQL)
+### Infrastructure/Deployment (NEW for Phase 4)
+- **Containerization**: Docker with multi-stage builds
+- **Orchestration**: Kubernetes (Minikube for local)
+- **Package Management**: Helm 3.x
+- **Base Images**: python:3.12-slim, node:20-alpine
+- **AIOps**: kubectl-ai (optional), Docker AI (optional)
 
 ---
 
@@ -399,24 +618,28 @@ CREATE TABLE chatkit_items (
 ```text
 todo-web-app/
 ├── frontend/                # Next.js 16+ App
+│   ├── Dockerfile           # NEW: Production multi-stage build
+│   ├── .dockerignore        # NEW: Docker build exclusions
 │   ├── src/
 │   │   ├── app/             # App Router pages
-│   │   │   └── chat/        # NEW: Chat page route
+│   │   │   └── chat/        # Chat page route
 │   │   ├── components/      # React components
-│   │   │   └── chat/        # NEW: ChatBot component
+│   │   │   └── chat/        # ChatBot component
 │   │   ├── lib/             # Utilities, auth config
 │   │   └── actions/         # Server Actions
 │   ├── tests/               # Vitest tests
 │   └── e2e/                 # Playwright E2E tests
 │
 ├── backend/                 # FastAPI + SQLModel
+│   ├── Dockerfile           # NEW: Production multi-stage build
+│   ├── .dockerignore        # NEW: Docker build exclusions
 │   ├── src/
 │   │   ├── api/             # Route handlers
 │   │   ├── models/          # SQLModel models
 │   │   ├── services/        # Business logic (task_service.py)
 │   │   ├── auth/            # JWT verification
 │   │   ├── db/              # Database session
-│   │   └── chat/            # NEW: ChatKit integration
+│   │   └── chat/            # ChatKit integration
 │   │       ├── __init__.py
 │   │       ├── server.py    # ChatKitServer subclass
 │   │       ├── agent.py     # AI agent with LiteLLM
@@ -425,7 +648,28 @@ todo-web-app/
 │   ├── alembic/             # Migrations
 │   └── tests/               # pytest tests
 │
-└── k8s/                     # Future Kubernetes configs (Phase 4+)
+└── k8s/                     # Kubernetes configurations
+    ├── local/               # Phase 4: Minikube (local K8s)
+    │   ├── backend/         # Backend Helm chart
+    │   │   ├── Chart.yaml
+    │   │   ├── values.yaml
+    │   │   └── templates/
+    │   │       ├── _helpers.tpl
+    │   │       ├── deployment.yaml
+    │   │       ├── service.yaml
+    │   │       ├── configmap.yaml
+    │   │       └── secret.yaml
+    │   ├── frontend/        # Frontend Helm chart
+    │   │   ├── Chart.yaml
+    │   │   ├── values.yaml
+    │   │   └── templates/
+    │   │       ├── _helpers.tpl
+    │   │       ├── deployment.yaml
+    │   │       ├── service.yaml
+    │   │       └── configmap.yaml
+    │   └── values-local.yaml  # Minikube-specific overrides
+    └── cloud/               # Phase 5: DOKS (DigitalOcean Kubernetes)
+        └── ...              # Cloud-specific configs (Phase 5)
 ```
 
 ---
@@ -437,10 +681,6 @@ todo-web-app/
 DATABASE_URL=postgresql+asyncpg://user:password@host/dbname
 BETTER_AUTH_SECRET=your-shared-secret-min-32-chars
 CORS_ORIGINS=https://your-frontend-domain.vercel.app
-```
-
-### Backend (.env) - NEW for Phase 3
-```bash
 GEMINI_API_KEY=your-gemini-api-key
 ```
 
@@ -449,12 +689,42 @@ GEMINI_API_KEY=your-gemini-api-key
 NEXT_PUBLIC_API_URL=https://your-backend-domain.railway.app
 BETTER_AUTH_SECRET=your-shared-secret-min-32-chars
 NEXT_PUBLIC_BETTER_AUTH_URL=https://your-frontend-domain.vercel.app
-```
-
-### Frontend (.env.local) - NEW for Phase 3
-```bash
 NEXT_PUBLIC_CHATKIT_URL=http://localhost:8000/api/chat
 NEXT_PUBLIC_CHATKIT_DOMAIN_KEY=localhost
+```
+
+### Kubernetes Secrets (NEW for Phase 4)
+```yaml
+# NEVER commit real values - use kubectl create secret or sealed-secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-secrets
+type: Opaque
+stringData:
+  DATABASE_URL: "<neon-connection-string>"
+  BETTER_AUTH_SECRET: "<32-char-secret>"
+  GEMINI_API_KEY: "<gemini-api-key>"
+```
+
+### Kubernetes ConfigMaps (NEW for Phase 4)
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  CORS_ORIGINS: "http://frontend-service.default.svc.cluster.local:3000"
+  ENVIRONMENT: "development"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+data:
+  NEXT_PUBLIC_API_URL: "http://backend-service.default.svc.cluster.local:8000"
+  NEXT_PUBLIC_CHATKIT_URL: "http://backend-service.default.svc.cluster.local:8000/api/chat"
 ```
 
 ---
@@ -497,6 +767,13 @@ NEXT_PUBLIC_CHATKIT_DOMAIN_KEY=localhost
 5. **Implement**: Run `/sp.implement` invoking appropriate subagents
 6. **Verify**: Run tests and browser automation
 
+### Phase 4 Workflow Extensions
+1. **Dockerize**: Build production images with multi-stage Dockerfiles
+2. **Chart**: Create Helm charts with `helm create` and customize
+3. **Validate**: Run `helm lint` and `helm template` for validation
+4. **Deploy**: Deploy to Minikube with `helm install`
+5. **Test**: Verify with `kubectl get pods`, `kubectl logs`, browser access
+
 ### Commit Requirements
 - Each commit SHOULD represent a logical unit of work
 - Commits MUST include tests for functionality added
@@ -507,7 +784,7 @@ NEXT_PUBLIC_CHATKIT_DOMAIN_KEY=localhost
 
 ## Governance
 
-This constitution supersedes all other development practices for Phase 3. All PRs and code reviews MUST verify compliance with these principles.
+This constitution supersedes all other development practices for Phase 4. All PRs and code reviews MUST verify compliance with these principles.
 
 ### Amendment Procedure
 - **MAJOR**: Backward incompatible changes (principle removal/redefinition) require migration plan
@@ -537,16 +814,27 @@ This constitution supersedes all other development practices for Phase 3. All PR
 - [x] Responsive, premium UI
 - [x] README with setup instructions
 
-### Phase 3 (NEW)
-- [ ] ChatKit backend at `/api/chat`
-- [ ] 5 MCP tools wrapping task_service
-- [ ] AI agent with Gemini via LiteLLM
-- [ ] ChatKit frontend component
-- [ ] Conversation persistence tables (chatkit_threads, chatkit_items)
-- [ ] Chat accessible from dashboard or `/chat`
-- [ ] Tests with 80% coverage
+### Phase 3 (Inherited - COMPLETE)
+- [x] ChatKit backend at `/api/chat`
+- [x] 5 MCP tools wrapping task_service
+- [x] AI agent with Gemini via LiteLLM
+- [x] ChatKit frontend component
+- [x] Conversation persistence tables (chatkit_threads, chatkit_items)
+- [x] Chat accessible from dashboard or `/chat`
+- [x] Tests with 80% coverage
+- [x] Demo video (under 90 seconds)
+
+### Phase 4 (NEW)
+- [ ] Production Dockerfile for backend (multi-stage)
+- [ ] Production Dockerfile for frontend (multi-stage)
+- [ ] Helm chart for backend with templates
+- [ ] Helm chart for frontend with templates
+- [ ] Minikube deployment working
+- [ ] Frontend accessible via browser
+- [ ] Chatbot functional in K8s environment
+- [ ] README with deployment instructions
 - [ ] Demo video (under 90 seconds)
 
 ---
 
-**Version**: 3.0.0 | **Ratified**: 2025-12-31 | **Last Amended**: 2026-01-18
+**Version**: 4.0.0 | **Ratified**: 2025-12-31 | **Last Amended**: 2026-01-31

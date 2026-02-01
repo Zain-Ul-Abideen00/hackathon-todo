@@ -1,5 +1,5 @@
 ---
-id: "050-clarify-frontend-chatkit"
+id: "2"
 title: "Clarifying Frontend ChatKit Integration"
 stage: "spec"
 date: "2026-01-18"

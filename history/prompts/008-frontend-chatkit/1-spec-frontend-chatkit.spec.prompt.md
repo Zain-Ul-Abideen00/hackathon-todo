@@ -1,5 +1,5 @@
 ---
-id: "049-spec-frontend-chatkit"
+id: "1"
 title: "Specifying Frontend ChatKit Integration"
 stage: "spec"
 date: "2026-01-18"

@@ -1,0 +1,56 @@
+# Frontend Helm Chart Values
+# Todo Chatbot - Next.js Frontend
+
+# Replica count
+replicaCount: 1
+
+# Name overrides
+nameOverride: ""
+fullnameOverride: ""
+
+# Image configuration
+image:
+  repository: todo-frontend
+  tag: "latest"
+  pullPolicy: Never  # Use Never for Minikube local images
+
+# Service configuration
+service:
+  type: NodePort
+  port: 3000
+  targetPort: 3000
+  nodePort: 30300  # Fixed NodePort for Minikube access
+
+# Resource limits and requests
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+# Probe configuration
+probes:
+  liveness:
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    failureThreshold: 3
+  readiness:
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    failureThreshold: 3
+
+# ConfigMap values (non-sensitive, NEXT_PUBLIC_* vars)
+config:
+  apiUrl: "http://todo-backend:8000"
+  chatkitUrl: "http://todo-backend:8000/api/chat"
+  betterAuthUrl: "http://localhost:3000"
+  chatkitDomainKey: "localhost"
+
+# Secret values (sensitive - pass via --set or external secrets)
+secrets:
+  databaseUrl: ""
+  betterAuthSecret: ""

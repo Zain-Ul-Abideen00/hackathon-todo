@@ -1,5 +1,5 @@
 ---
-id: "051-plan-frontend-chatkit"
+id: "3"
 title: "Planning Frontend ChatKit Integration"
 stage: "plan"
 date: "2026-01-18"

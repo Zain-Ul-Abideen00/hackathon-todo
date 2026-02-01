@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import dynamic from "next/dynamic";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -11,14 +11,15 @@ import Loading from "./loading";
 // const Loader = dynamic(() => import("@/app/loading").then(mod => mod.loading));
 const ToastProvider = dynamic(() => import("@/components/providers/ToastProvider").then(mod => mod.ToastProvider));
 
-const geistSans = Geist({
+// Using local fonts to avoid network issues during Docker builds
+const geistSans = localFont({
+    src: "../fonts/Geist[wght].woff2",
     variable: "--font-geist-sans",
-    subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+    src: "../fonts/GeistMono[wght].woff2",
     variable: "--font-geist-mono",
-    subsets: ["latin"],
 });
 
 export const metadata: Metadata = {

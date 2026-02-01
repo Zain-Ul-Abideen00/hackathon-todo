@@ -1,5 +1,5 @@
 ---
-id: "053-implement-frontend-chatkit"
+id: "5"
 title: "Implemented Frontend ChatKit"
 stage: "green"
 date: "2026-01-18"

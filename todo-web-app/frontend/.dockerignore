@@ -1,0 +1,48 @@
+# =============================================================================
+# Docker Ignore - Exclude files from build context
+# =============================================================================
+
+# Dependencies (installed during build)
+node_modules/
+.pnpm-store/
+
+# Build output (created during build)
+.next/
+out/
+
+# Source control
+.git/
+.gitignore
+
+# Environment files (secrets should be injected at runtime)
+.env
+.env.*
+!.env.example
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation (not needed in container)
+*.md
+!README.md
+
+# Testing
+tests/
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+coverage/
+
+# Misc
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# TypeScript build info
+tsconfig.tsbuildinfo
