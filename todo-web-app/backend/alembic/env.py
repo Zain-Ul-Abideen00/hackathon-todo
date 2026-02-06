@@ -90,8 +90,20 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+def include_name(name, type_, parent_names):
+    """Filter to exclude Better Auth tables from autogeneration."""
+    if type_ == "table":
+        if name in ["user", "account", "session", "verification", "verification_token"]:
+            return False
+    return True
+
+
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        include_name=include_name,
+    )
 
     with context.begin_transaction():
         context.run_migrations()

@@ -16,13 +16,14 @@ import { useTasksQuery } from "@/hooks/useTasks";
 import { useTaskStore } from "@/stores/taskStore";
 
 export default function TasksPage() {
-    const { status, sortBy, sortOrder, searchQuery } = useTaskStore();
+    const { status, sortBy, sortOrder, searchQuery, tagIds } = useTaskStore();
 
     const { data, isLoading } = useTasksQuery({
         status: status === "all" ? undefined : status,
         sort_by: sortBy,
         order: sortOrder,
         search: searchQuery || undefined,
+        tags: tagIds.length > 0 ? tagIds : undefined,
     });
 
     return (

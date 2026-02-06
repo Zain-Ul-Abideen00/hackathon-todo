@@ -98,6 +98,24 @@ export function DashboardTaskItem({ task }: DashboardTaskItemProps) {
                             Due: {formatDueDate(task.due_date)}
                         </p>
                     )}
+                    {task.tags && task.tags.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1 mt-1">
+                            {task.tags.map(tag => (
+                                <span
+                                    key={tag.id}
+                                    className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium ring-1 ring-inset"
+                                    style={{
+                                        backgroundColor: `#${tag.color}15`,
+                                        color: `#${tag.color}`,
+                                        boxShadow: `inset 0 0 0 1px #${tag.color}30`
+                                    }}
+                                >
+                                    <span className="w-1 h-1 rounded-full bg-current" />
+                                    {tag.name}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </Link>
 

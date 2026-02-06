@@ -22,6 +22,8 @@ from src.schemas.task import (
     TaskUpdate,
 )
 from src.services import task_service
+from src.models.reminder import Reminder, ReminderCreate
+from sqlmodel import select
 
 router = APIRouter(tags=["Tasks"])
 
@@ -104,6 +106,10 @@ async def list_tasks(
         str | None,
         Query(description="Search title or description"),
     ] = None,
+    tags: Annotated[
+        list[int] | None,
+        Query(description="Filter by tag IDs"),
+    ] = None,
     sort: Annotated[
         str | None,
         Query(description="Sort by: created, title, due_date, priority"),
@@ -119,6 +125,7 @@ async def list_tasks(
 
     - **status**: Filter by status (todo, in_progress, completed, overdue)
     - **priority**: Filter by priority (low, medium, high)
+    - **tags**: Filter by tag IDs
     - **sort**: Sort field
     - **order**: Sort direction (asc/desc)
     - **search**: Search text
@@ -141,6 +148,7 @@ async def list_tasks(
         status_filter=actual_status,
         priority_filter=priority,
         search=search,
+        tag_ids=tags,
     )
 
     return TaskListResponse(
@@ -293,3 +301,111 @@ async def toggle_complete(
         )
 
     return TaskResponse.model_validate(task)
+
+
+# --- US4/Phase7: Reminders ---
+
+
+@router.post(
+    "/{user_id}/tasks/{task_id}/reminders",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a reminder for a task",
+    responses={
+        404: {"description": "Task not found"},
+        403: {"description": "Forbidden"},
+    },
+)
+@limiter.limit("50/minute")
+async def create_reminder(
+    request: Request,
+    user_id: Annotated[str, Path(description="User ID")],
+    task_id: Annotated[int, Path(description="Task ID")],
+    reminder_data: ReminderCreate,
+    session: DBSession,
+    current_user: Annotated[dict, Depends(get_current_user)],
+) -> Reminder:
+    """Create a new reminder offset for the task."""
+    validate_user_access(user_id, current_user)
+
+    # Verify task ownership
+    task = await task_service.get_task(session, task_id, user_id)
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"code": "NOT_FOUND", "message": "Task not found"},
+        )
+
+    reminder = Reminder(
+        task_id=task_id,
+        user_id=user_id,
+        remind_at=reminder_data.remind_at.replace(tzinfo=None),
+        triggered=False,
+    )
+    session.add(reminder)
+    await session.commit()
+    await session.refresh(reminder)
+    return reminder
+
+
+@router.get(
+    "/{user_id}/tasks/{task_id}/reminders",
+    response_model=list[Reminder],
+    summary="List reminders for a task",
+)
+@limiter.limit("100/minute")
+async def list_reminders(
+    request: Request,
+    user_id: Annotated[str, Path(description="User ID")],
+    task_id: Annotated[int, Path(description="Task ID")],
+    session: DBSession,
+    current_user: Annotated[dict, Depends(get_current_user)],
+) -> list[Reminder]:
+    """List all reminders associated with a task."""
+    validate_user_access(user_id, current_user)
+
+    # Verify task ownership
+    task = await task_service.get_task(session, task_id, user_id)
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"code": "NOT_FOUND", "message": "Task not found"},
+        )
+
+    stmt = select(Reminder).where(Reminder.task_id == task_id)
+    result = await session.exec(stmt)
+    return list(result.all())
+
+
+@router.delete(
+    "/{user_id}/tasks/{task_id}/reminders/{reminder_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a reminder",
+)
+@limiter.limit("50/minute")
+async def delete_reminder(
+    request: Request,
+    user_id: Annotated[str, Path(description="User ID")],
+    task_id: Annotated[int, Path(description="Task ID")],
+    reminder_id: Annotated[int, Path(description="Reminder ID")],
+    session: DBSession,
+    current_user: Annotated[dict, Depends(get_current_user)],
+):
+    """Delete a reminder."""
+    validate_user_access(user_id, current_user)
+
+    # Verify task ownership implicitly via Reminder query + user_id check matches strict ownership
+    stmt = select(Reminder).where(
+        Reminder.id == reminder_id, Reminder.task_id == task_id, Reminder.user_id == user_id
+    )
+    result = await session.exec(stmt)
+    reminder = result.first()
+
+    if not reminder:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"code": "NOT_FOUND", "message": "Reminder not found"},
+        )
+
+    await session.delete(reminder)
+    await session.commit()
+    return None

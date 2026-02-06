@@ -27,6 +27,8 @@ from slowapi.errors import RateLimitExceeded
 from src.api.deps import limiter
 from src.api.routes import health
 from src.api.routes.tasks import router as tasks_router
+from src.api.routes.tags import router as tags_router
+from src.api.routes.notifications import router as notifications_router
 from src.chat.routes import router as chat_router
 
 
@@ -61,9 +63,48 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     except Exception as e:
         print(f"⚠️ Database warmup failed (will retry on first request): {e}")
 
+    # Start Reminder Loop
+    import asyncio
+    from src.db.connection import engine
+    from sqlmodel.ext.asyncio.session import AsyncSession
+    from src.services.reminder_service import process_due_reminders
+
+    async def reminder_loop():
+        print("⏰ Reminder loop started")
+        while True:
+            try:
+                # Use a fresh session for each check
+                async with AsyncSession(engine) as session:
+                    count = await process_due_reminders(session)
+                    if count > 0:
+                        print(f"🔔 Triggered {count} reminders")
+            except Exception as e:
+                print(f"⚠️ Error in reminder loop: {e}")
+
+            # Check for overdue tasks
+            try:
+                from src.services.overdue_service import process_overdue_tasks
+                async with AsyncSession(engine) as session:
+                    overdue_count = await process_overdue_tasks(session)
+                    if overdue_count > 0:
+                        print(f"⏰ Marked {overdue_count} tasks as overdue")
+            except Exception as e:
+                print(f"⚠️ Error in overdue loop: {e}")
+
+            await asyncio.sleep(60) # Check every minute
+
+    # Store task reference to prevent garbage collection
+    reminder_task = asyncio.create_task(reminder_loop())
+
     yield
 
     # Shutdown
+    reminder_task.cancel()
+    try:
+        await reminder_task
+    except asyncio.CancelledError:
+        print("⏰ Reminder loop stopped")
+
     print("👋 Shutting down Todo Web App Backend...")
 
 
@@ -141,6 +182,8 @@ async def validation_exception_handler(request: Request, exc: ValidationError) -
 # Include routers
 app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(tasks_router, prefix="/api", tags=["Tasks"])
+app.include_router(tags_router, prefix="/api", tags=["Tags"])
+app.include_router(notifications_router, prefix="/api", tags=["Notifications"])
 app.include_router(chat_router, prefix="/api", tags=["Chat"])
 
 

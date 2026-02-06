@@ -9,6 +9,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as tasksApi from "@/lib/api/tasks";
 import { taskKeys } from "@/lib/queries/keys";
 import type { ListTasksParams, PaginatedResponse, Task, TaskCreate, TaskUpdate } from "@/types/task";
+import type { Tag } from "@/types/tag";
+import { useTagStore } from "@/stores/tagStore";
 import { toast } from "sonner";
 
 /**
@@ -50,11 +52,65 @@ export function useCreateTask() {
 
 	return useMutation({
 		mutationFn: (data: TaskCreate) => tasksApi.createTask(data),
-		onSuccess: () => {
+		onMutate: async (newTaskData) => {
+			// Cancel any outgoing refetches
+			await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+
+			// Snapshot the previous value
+			const previousTasks = queryClient.getQueryData<PaginatedResponse<Task>>(taskKeys.lists());
+
+            const tempId = `temp-${Date.now()}`;
+            const optimisticTask: Task = {
+                id: tempId,
+                title: newTaskData.title,
+                description: newTaskData.description || null,
+                status: newTaskData.status || "todo",
+                priority: newTaskData.priority || "medium",
+                due_date: newTaskData.due_date || null,
+                completed: newTaskData.status === "completed",
+                user_id: "me",
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                tags: []
+            };
+
+            // Optimistically update to the new value
+            queryClient.setQueriesData<PaginatedResponse<Task>>(
+                { queryKey: taskKeys.lists() },
+                (old) => {
+                    // Safe check: if we don't have old data, we can't safely append optimistic task
+                    // without knowing pagination state, so we skip optimistic update for empty cache.
+                    if (!old || !old.data) return old;
+
+                    return {
+                        ...old,
+                        data: [optimisticTask, ...old.data],
+                        total: old.total + 1
+                    };
+                }
+            );
+
+			// Return a context object with the snapshotted value
+			return { previousTasks };
+		},
+		onError: (err, newTodo, context) => {
+             toast.error("Failed to create task");
+             // Just invalidate everything to be safe
+             queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+		},
+		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
 		},
 	});
 }
+
+/**
+ * Hook to update an existing task
+ */
+
+
+// ... existing code ...
 
 /**
  * Hook to update an existing task
@@ -66,40 +122,62 @@ export function useUpdateTask() {
 		mutationFn: ({ id, data }: { id: string; data: TaskUpdate }) => tasksApi.updateTask(id, data),
 		onMutate: async ({ id, data }) => {
             const taskId = String(id);
-			// Cancel queries
 			await queryClient.cancelQueries({ queryKey: taskKeys.detail(taskId) });
 			await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
 
-			// Snapshot previous value
 			const previousTask = queryClient.getQueryData<Task>(taskKeys.detail(taskId));
 
-			// Optimistically update Detail
+            // Resolve tags if they are being updated
+            let optimisticTags: Tag[] | undefined;
+            if (data.tags) {
+                const allTags = useTagStore.getState().tags;
+                optimisticTags = allTags.filter(t => data.tags?.includes(t.id));
+            }
+
+            // Prepare update object, excluding raw 'tags' and 'reminders' arrays to avoid type mismatch
+            const { tags: _rawTags, reminders: _rawReminders, ...otherUpdates } = data;
+
+            // Helper to merge task data safely
+            const mergeTaskData = (task: Task): Task => ({
+                ...task,
+                ...otherUpdates,
+                // Apply resolved tags if present
+                ...(optimisticTags ? { tags: optimisticTags } : {}),
+                // Handle reminders optimistic update
+                ...(data.reminders ? {
+                    reminders: data.reminders.map((r, i) => ({
+                        // Spread existing reminder data
+                        ...r,
+                        // Polyfill missing Reminder properties for UI
+                        id: -1 - i, // Temporary negative ID
+                        triggered: false,
+                        task_id: task.id,
+                        user_id: task.user_id,
+                        // Ensure date string is preserved or null
+                        remind_at: r.remind_at
+                    }))
+                } : {}),
+
+                // Handle status updates affecting 'completed'
+                ...(data.status === "completed" ? { completed: true } : {}),
+                ...(data.status === "todo" || data.status === "in_progress" ? { completed: false } : {}),
+                // If completion toggled, handle status
+                ...(data.completed === true ? { status: "completed" as const } : {}),
+                ...(data.completed === false && task.status === "completed" ? { status: "todo" as const } : {}),
+                updated_at: new Date().toISOString(),
+            });
+
 			if (previousTask) {
-				queryClient.setQueryData<Task>(taskKeys.detail(taskId), {
-					...previousTask,
-					...data,
-                    // Auto-sync completed based on status if provided
-                    ...(data.status === "completed" ? { completed: true } : {}),
-                    ...(data.status === "todo" || data.status === "in_progress" ? { completed: false } : {}),
-                    // If completion toggled via status
-                    updated_at: new Date().toISOString(),
-				});
+				queryClient.setQueryData<Task>(taskKeys.detail(taskId), mergeTaskData(previousTask));
 			}
 
-            // Optimistically update Lists
             queryClient.setQueriesData<PaginatedResponse<Task>>({ queryKey: taskKeys.lists() }, (old) => {
-                if (!old) return old;
+                if (!old || !old.data) return old;
                 return {
                     ...old,
                     data: old.data.map(task => {
                         if (String(task.id) === taskId) {
-                            return {
-                                ...task,
-                                ...data,
-                                ...(data.status === "completed" ? { completed: true } : {}),
-                                ...(data.status === "todo" || data.status === "in_progress" ? { completed: false } : {}),
-                                updated_at: new Date().toISOString(),
-                            };
+                            return mergeTaskData(task);
                         }
                         return task;
                     })
@@ -108,6 +186,7 @@ export function useUpdateTask() {
 
 			return { previousTask };
 		},
+// ... rest of hook ...
 		onError: (err, { id }, context) => {
             const taskId = String(id);
 			if (context?.previousTask) {
@@ -121,6 +200,10 @@ export function useUpdateTask() {
 			queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
 			queryClient.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
             queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
+            // Refresh notifications immediately to clear any stale overdue alerts if rescheduled
+            import("@/stores/notificationStore").then(({ useNotificationStore }) => {
+                useNotificationStore.getState().fetchNotifications(false);
+            });
 		},
 	});
 }
@@ -133,9 +216,31 @@ export function useDeleteTask() {
 
 	return useMutation({
 		mutationFn: (id: string) => tasksApi.deleteTask(id),
+        onMutate: async (id) => {
+            const taskId = String(id);
+            await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+
+            queryClient.setQueriesData<PaginatedResponse<Task>>(
+                { queryKey: taskKeys.lists() },
+                (old) => {
+                    if (!old || !old.data) return old;
+                    return {
+                        ...old,
+                        data: old.data.filter(task => String(task.id) !== taskId),
+                        total: Math.max(0, old.total - 1)
+                    };
+                }
+            );
+        },
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
+            toast.success("Task deleted");
 		},
+        onError: () => {
+             toast.error("Failed to delete task");
+             queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+        }
 	});
 }
 
@@ -146,7 +251,12 @@ export function useToggleComplete() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: (id: string) => tasksApi.toggleComplete(id),
+		mutationFn: (id: string) => {
+            if (String(id).startsWith("temp-")) {
+                throw new Error("Cannot modify task while it is being created");
+            }
+            return tasksApi.toggleComplete(id);
+        },
 		onMutate: async (id) => {
             const taskId = String(id);
 			// Cancel text queries
@@ -169,7 +279,7 @@ export function useToggleComplete() {
 
             // Optimistically update Lists
             queryClient.setQueriesData<PaginatedResponse<Task>>({ queryKey: taskKeys.lists() }, (old) => {
-                if (!old) return old;
+                if (!old || !old.data) return old;
                 return {
                     ...old,
                     data: old.data.map(task => {
@@ -178,7 +288,7 @@ export function useToggleComplete() {
                             return {
                                 ...task,
                                 completed: newCompleted,
-                                status: newCompleted ? "completed" : "todo",
+                                status: newCompleted ? "completed" : "todo", // Sync with backend logic
                                 updated_at: new Date().toISOString(),
                             };
                         }
@@ -201,6 +311,10 @@ export function useToggleComplete() {
 			queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
 			queryClient.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
             queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
+            // Refresh notifications immediately to clear any stale overdue/reminders
+            import("@/stores/notificationStore").then(({ useNotificationStore }) => {
+                useNotificationStore.getState().fetchNotifications(false);
+            });
 		},
 	});
 }

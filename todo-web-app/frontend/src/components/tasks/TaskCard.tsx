@@ -225,6 +225,26 @@ export function TaskCard({ task }: TaskCardProps) {
                                             {formatDueDate(task.due_date)}
                                         </span>
                                     )}
+
+                                    {/* Tags */}
+                                    {task.tags && task.tags.length > 0 && (
+                                        <div className="flex items-center gap-1 ml-1 pl-1 border-l border-border/50">
+                                            {task.tags.map(tag => (
+                                                <span
+                                                    key={tag.id}
+                                                    className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium ring-1 ring-inset"
+                                                    style={{
+                                                        backgroundColor: `#${tag.color}15`, // 15 = ~8% opacity
+                                                        color: `#${tag.color}`,
+                                                        boxShadow: `inset 0 0 0 1px #${tag.color}30` // Border with 30 (approx 20%) opacity
+                                                    }}
+                                                >
+                                                    <span className="w-1 h-1 rounded-full bg-current" />
+                                                    {tag.name}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

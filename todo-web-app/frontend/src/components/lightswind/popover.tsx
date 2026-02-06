@@ -1,191 +1,89 @@
-"use client";
-import * as React from "react";
-import { FiXCircle as CircleXIcon } from "react-icons/fi";
-import { cn } from "../../lib/utils";
+"use client"
 
-// --- Context and Props (with the new prop added) ---
+import * as React from "react"
+import { Popover as PopoverPrimitive } from "radix-ui"
 
-interface PopoverContextType {
-	open: boolean;
-	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+import { cn } from "@/lib/utils"
+
+function Popover({
+    ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Root>) {
+    return <PopoverPrimitive.Root data-slot="popover" {...props} />
 }
 
-const PopoverContext = React.createContext<PopoverContextType | undefined>(undefined);
-
-interface PopoverProps {
-	children: React.ReactNode;
-	defaultOpen?: boolean;
-	open?: boolean;
-	onOpenChange?: (open: boolean) => void;
-	closeOnOutsideClick?: boolean; // New prop for controlling outside click behavior
+function PopoverTrigger({
+    ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {
+    return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
 
-// --- The Updated Popover Component ---
-
-const Popover: React.FC<PopoverProps> = ({
-	children,
-	defaultOpen = false,
-	open: controlledOpen,
-	onOpenChange,
-	closeOnOutsideClick = true, // <-- CHANGE #1: Destructure the prop with a default value of 'true'
-}) => {
-	const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
-
-	const isControlled = controlledOpen !== undefined;
-	const open = isControlled ? controlledOpen : uncontrolledOpen;
-
-	const setOpen = React.useCallback(
-		(value: boolean | ((prev: boolean) => boolean)) => {
-			if (!isControlled) {
-				setUncontrolledOpen(value);
-			}
-			if (onOpenChange) {
-				const newValue = typeof value === "function" ? value(open) : value;
-				onOpenChange(newValue);
-			}
-		},
-		[isControlled, onOpenChange, open],
-	);
-
-	// Close popover when clicking outside (now conditional)
-	React.useEffect(() => {
-		// <-- CHANGE #2: The entire effect is now conditional
-		// If the prop is false, we don't add the event listener at all.
-		if (!open || !closeOnOutsideClick) {
-			return;
-		}
-
-		const handleClickOutside = (event: MouseEvent) => {
-			const popoverContents = document.querySelectorAll("[data-popover-content]");
-			let isClickInside = false;
-
-			popoverContents.forEach((content) => {
-				if (content.contains(event.target as Node)) {
-					isClickInside = true;
-				}
-			});
-
-			if (!isClickInside) {
-				setOpen(false);
-			}
-		};
-
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-		// <-- CHANGE #3: Add the new prop to the dependency array
-	}, [open, setOpen, closeOnOutsideClick]);
-
-	// Hide/show body scrollbar based on popover open state
-	React.useEffect(() => {
-		if (open) {
-			document.body.style.overflow = "hidden";
-		} else {
-			document.body.style.overflow = "";
-		}
-		return () => {
-			document.body.style.overflow = "";
-		};
-	}, [open]);
-
-	return <PopoverContext.Provider value={{ open, setOpen }}>{children}</PopoverContext.Provider>;
-};
-
-// --- PopoverTrigger and PopoverContent remain the same ---
-// (No changes needed for the other components)
-
-interface PopoverTriggerProps {
-	asChild?: boolean;
-	children: React.ReactNode;
-	onClick?: React.MouseEventHandler<HTMLElement>;
+function PopoverContent({
+    className,
+    align = "center",
+    sideOffset = 4,
+    ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+    return (
+        <PopoverPrimitive.Portal>
+            <PopoverPrimitive.Content
+                data-slot="popover-content"
+                align={align}
+                sideOffset={sideOffset}
+                className={cn(
+                    "bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 flex flex-col gap-2.5 rounded-lg p-2.5 text-sm shadow-md ring-1 duration-100 z-50 w-72 origin-(--radix-popover-content-transform-origin) outline-hidden",
+                    className
+                )}
+                {...props}
+            />
+        </PopoverPrimitive.Portal>
+    )
 }
 
-const PopoverTrigger: React.FC<PopoverTriggerProps> = ({ onClick, asChild, children }) => {
-	const context = React.useContext(PopoverContext);
-	if (!context) {
-		throw new Error("PopoverTrigger must be used within a Popover");
-	}
-
-	const { open, setOpen } = context;
-
-	const handleClick: React.MouseEventHandler<HTMLElement> = (e) => {
-		setOpen(!open);
-		onClick?.(e);
-	};
-
-	if (asChild) {
-		return (
-			<>
-				{React.Children.map(children, (child) => {
-					if (React.isValidElement(child)) {
-						const childProps = {
-							...(child.props as any),
-							onClick: (e: React.MouseEvent) => {
-								handleClick(e as React.MouseEvent<HTMLElement>);
-								if ((child.props as any).onClick) (child.props as any).onClick(e);
-							},
-						};
-						return React.cloneElement(child, childProps);
-					}
-					return child;
-				})}
-			</>
-		);
-	}
-
-	return (
-		<button type="button" onClick={handleClick} aria-expanded={open}>
-			{children}
-		</button>
-	);
-};
-
-interface PopoverContentProps extends React.HTMLAttributes<HTMLDivElement> {
-	align?: "center" | "start" | "end";
-	sideOffset?: number;
+function PopoverAnchor({
+    ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Anchor>) {
+    return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />
 }
 
-const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
-	({ className, align = "center", sideOffset = 4, ...props }, ref) => {
-		const context = React.useContext(PopoverContext);
-		if (!context) {
-			throw new Error("PopoverContent must be used within a Popover");
-		}
+function PopoverHeader({ className, ...props }: React.ComponentProps<"div">) {
+    return (
+        <div
+            data-slot="popover-header"
+            className={cn("flex flex-col gap-0.5 text-sm", className)}
+            {...props}
+        />
+    )
+}
 
-		const { open, setOpen } = context;
+function PopoverTitle({ className, ...props }: React.ComponentProps<"h2">) {
+    return (
+        <div
+            data-slot="popover-title"
+            className={cn("font-medium", className)}
+            {...props}
+        />
+    )
+}
 
-		if (!open) return null;
+function PopoverDescription({
+    className,
+    ...props
+}: React.ComponentProps<"p">) {
+    return (
+        <p
+            data-slot="popover-description"
+            className={cn("text-muted-foreground", className)}
+            {...props}
+        />
+    )
+}
 
-		return (
-			<>
-				<div
-					className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity"
-					style={{ opacity: open ? 1 : 0 }}
-				/>
-				<div
-					ref={ref}
-					data-popover-content
-					className={cn(
-						"fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-auto max-w-[90vw] rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-						"max-h-[calc(100vh-2rem)] overflow-y-auto",
-						className,
-					)}
-					{...props}
-				>
-					{/* Close button removed for cleaner UI - click outside to close */}
-					{/* <button
-						onClick={() => setOpen(false)}
-						className="absolute top-2 right-2 z-10 p-1 bg-gray-200/20 backdrop-blur-sm rounded-full shadow-md hover:bg-background hover:scale-110 transition-all duration-200"
-					>
-						<CircleXIcon className="w-6 h-6" />
-					</button> */}
-					{props.children}
-				</div>
-			</>
-		);
-	},
-);
-PopoverContent.displayName = "PopoverContent";
-
-export { Popover, PopoverTrigger, PopoverContent };
+export {
+    Popover,
+    PopoverAnchor,
+    PopoverContent,
+    PopoverDescription,
+    PopoverHeader,
+    PopoverTitle,
+    PopoverTrigger,
+}

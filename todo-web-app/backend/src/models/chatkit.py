@@ -7,8 +7,7 @@ in PostgreSQL with proper user isolation and cascade delete behavior.
 
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, ForeignKey, JSON
 from sqlmodel import Field, SQLModel, AutoString
 
 
@@ -29,7 +28,7 @@ class ChatKitThread(SQLModel, table=True):
     )
     metadata_: dict = Field(
         default={},
-        sa_column=Column("metadata", JSONB, default={}),
+        sa_column=Column("metadata", JSON, default={}),
     )
 
 
@@ -46,7 +45,7 @@ class ChatKitItem(SQLModel, table=True):
     id: str = Field(primary_key=True)
     thread_id: str = Field(sa_column=Column(AutoString(), ForeignKey("chatkit_threads.id", ondelete="CASCADE"), index=True, nullable=False))
     type: str  # "message", "tool_call", "tool_result"
-    content: dict = Field(default={}, sa_column=Column(JSONB, default={}))
+    content: dict = Field(default={}, sa_column=Column(JSON, default={}))
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None)
     )
