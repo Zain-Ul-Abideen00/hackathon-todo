@@ -14,6 +14,7 @@ interface TaskFilterState {
 	sortOrder: SortOrder;
 	viewMode: ViewMode;
 	searchQuery: string;
+	tagIds: number[];
 
 	// Actions
 	setStatus: (status: FilterStatus) => void;
@@ -21,6 +22,7 @@ interface TaskFilterState {
 	setSortOrder: (order: SortOrder) => void;
 	setViewMode: (mode: ViewMode) => void;
 	setSearchQuery: (query: string) => void;
+	setTagIds: (tagIds: number[]) => void;
 	resetFilters: () => void;
 }
 
@@ -30,6 +32,7 @@ const defaultState = {
 	sortOrder: "desc" as SortOrder,
 	viewMode: "grid" as ViewMode,
 	searchQuery: "",
+	tagIds: [] as number[],
 };
 
 export const useTaskStore = create<TaskFilterState>()(
@@ -41,6 +44,7 @@ export const useTaskStore = create<TaskFilterState>()(
 			setSortOrder: (sortOrder) => set({ sortOrder }),
 			setViewMode: (viewMode) => set({ viewMode }),
 			setSearchQuery: (searchQuery) => set({ searchQuery }),
+			setTagIds: (tagIds) => set({ tagIds }),
 			resetFilters: () => set(defaultState),
 		}),
 		{

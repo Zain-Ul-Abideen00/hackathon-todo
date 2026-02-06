@@ -5,7 +5,7 @@
  * @module lib/api/tasks
  */
 
-import type { ListTasksParams, Task, TaskCreate, TaskUpdate } from "@/types/task";
+import type { ListTasksParams, PaginatedResponse, Task, TaskCreate, TaskUpdate } from "@/types/task";
 import { api } from "../api";
 import { authClient } from "../auth-client";
 
@@ -29,16 +29,6 @@ interface TaskListResponse {
 	has_more: boolean;
 }
 
-/**
- * Frontend paginated response format
- */
-interface PaginatedResponse<T> {
-	data: T[];
-	total: number;
-	page: number;
-	limit: number;
-	hasMore: boolean;
-}
 
 /**
  * Get aggregated task statistics
@@ -89,6 +79,12 @@ export async function getTasks(params: ListTasksParams = {}): Promise<PaginatedR
     if ((params as any).priority) {
         searchParams.set("priority", (params as any).priority);
     }
+
+	if (params.tags && params.tags.length > 0) {
+		// Filter out optimistic tags (negative IDs) as they don't exist on server
+		const validTags = params.tags.filter(id => id > 0);
+		validTags.forEach((tagId) => searchParams.append("tags", String(tagId)));
+	}
 
 	const query = searchParams.toString();
 	const result = await api.get<TaskListResponse>(`/api/${userId}/tasks${query ? `?${query}` : ""}`);

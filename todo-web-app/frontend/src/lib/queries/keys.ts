@@ -17,3 +17,8 @@ export const userKeys = {
 	all: ["user"] as const,
 	session: () => [...userKeys.all, "session"] as const,
 };
+
+export const tagKeys = {
+	all: ["tags"] as const,
+	lists: () => [...tagKeys.all, "list"] as const,
+};

@@ -19,7 +19,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.api.deps import get_session
 from src.main import app
-from src.models import Task  # noqa: F401 - Import to register model
+from src.models import Task, Tag, TaskTag  # noqa: F401 - Import to register model
 
 
 # Test database engine using SQLite for isolation

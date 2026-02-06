@@ -6,6 +6,31 @@
 export type TaskStatus = "todo" | "in_progress" | "completed";
 export type TaskPriority = "low" | "medium" | "high";
 
+import type { Tag } from "./tag";
+
+export interface RecurringPattern {
+    pattern: "daily" | "weekly" | "monthly" | "yearly";
+    interval: number;
+    end_date: string | null;
+    last_generated: string | null;
+}
+
+export interface RecurringCreate {
+    pattern: "daily" | "weekly" | "monthly" | "yearly";
+    interval: number;
+    end_date?: string | null;
+}
+
+export interface Reminder {
+    id: number;
+    remind_at: string;
+    triggered: boolean;
+}
+
+export interface ReminderCreate {
+    remind_at: string;
+}
+
 /**
  * Task entity from the backend API
  */
@@ -20,6 +45,9 @@ export interface Task {
 	created_at: string;
 	updated_at: string;
 	user_id: string;
+    tags?: Tag[];
+    recurring_pattern?: RecurringPattern;
+    reminders?: Reminder[];
 }
 
 /**
@@ -31,6 +59,9 @@ export interface TaskCreate {
 	status?: TaskStatus;
 	priority?: TaskPriority;
 	due_date?: string | null;
+    tags?: number[];
+    recurring?: RecurringCreate;
+    reminders?: ReminderCreate[];
 }
 
 /**
@@ -43,6 +74,9 @@ export interface TaskUpdate {
 	priority?: TaskPriority;
 	due_date?: string | null;
 	completed?: boolean;
+    tags?: number[];
+    recurring?: RecurringCreate | null;
+    reminders?: ReminderCreate[];
 }
 
 /**
@@ -73,6 +107,7 @@ export interface ListTasksParams {
 	limit?: number;
 	search?: string;
 	cursor?: string;
+	tags?: number[];
 }
 
 /**
@@ -83,7 +118,8 @@ export interface PaginatedResponse<T> {
 	total: number;
 	page: number;
 	limit: number;
-	total_pages: number;
+	hasMore: boolean;
+	total_pages?: number;
 }
 
 /**

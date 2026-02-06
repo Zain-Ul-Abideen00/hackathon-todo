@@ -6,7 +6,10 @@ and indexed fields for efficient querying.
 
 from datetime import UTC, datetime
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, Relationship
+from .task_tag import TaskTag
+from .recurring import RecurringCreate, RecurringUpdate
+from .reminder import ReminderCreate
 
 
 def utc_now() -> datetime:
@@ -37,8 +40,37 @@ class Task(SQLModel, table=True):
     status: str = Field(default="todo", index=True, max_length=20)
     priority: str = Field(default="medium", index=True, max_length=20)
     due_date: datetime | None = Field(default=None, index=True)
+    overdue_notified_at: datetime | None = Field(default=None) # Track if we warned user
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
+
+    tags: list["Tag"] = Relationship(
+        back_populates="tasks",
+        link_model=TaskTag,
+        sa_relationship_kwargs={"lazy": "selectin"}
+    )
+    recurring_pattern: "RecurringPattern" = Relationship(
+        sa_relationship_kwargs={
+            "uselist": False,
+            "cascade": "all, delete-orphan",
+            "lazy": "selectin"
+        },
+        back_populates="task",
+    )
+    reminders: list["Reminder"] = Relationship(
+        back_populates="task",
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan",
+            "lazy": "selectin"
+        },
+    )
+    notifications: list["Notification"] = Relationship(
+        back_populates="task",
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan",
+            "lazy": "selectin"
+        },
+    )
 
 
 class TaskCreate(SQLModel):
@@ -49,6 +81,9 @@ class TaskCreate(SQLModel):
     status: str = Field(default="todo", max_length=20)
     priority: str = Field(default="medium", max_length=20)
     due_date: datetime | None = None
+    tags: list[int] = Field(default_factory=list)
+    recurring: RecurringCreate | None = None
+    reminders: list[ReminderCreate] = Field(default_factory=list)
 
 
 class TaskUpdate(SQLModel):
@@ -60,3 +95,6 @@ class TaskUpdate(SQLModel):
     status: str | None = Field(default=None, max_length=20)
     priority: str | None = Field(default=None, max_length=20)
     due_date: datetime | None = None
+    tags: list[int] | None = None
+    recurring: RecurringUpdate | None = None
+    reminders: list[ReminderCreate] | None = None

@@ -237,6 +237,26 @@ export default function ViewTaskPage({ params }: { params: Promise<{ id: string 
                         </div>
                     )}
 
+                    {/* Tags */}
+                    {task.tags && task.tags.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2">
+                            {task.tags.map(tag => (
+                                <span
+                                    key={tag.id}
+                                    className="flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium ring-1 ring-inset"
+                                    style={{
+                                        backgroundColor: `#${tag.color}15`,
+                                        color: `#${tag.color}`,
+                                        boxShadow: `inset 0 0 0 1px #${tag.color}30`
+                                    }}
+                                >
+                                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                                    {tag.name}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Description */}
                     {task.description ? (
                         <div className="prose prose-sm dark:prose-invert max-w-none rounded-lg bg-muted/30 p-4">

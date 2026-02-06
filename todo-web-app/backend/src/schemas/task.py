@@ -4,6 +4,9 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from src.models.recurring import RecurringCreate, RecurringUpdate, RecurringPattern
+from src.models.reminder import ReminderCreate, Reminder
+
 
 class TaskCreate(BaseModel):
     """Schema for creating a new task.
@@ -20,6 +23,9 @@ class TaskCreate(BaseModel):
     status: str = Field(default="todo", description="Task status (todo, in_progress, completed)")
     priority: str = Field(default="medium", description="Task priority (low, medium, high)")
     due_date: datetime | None = Field(default=None, description="Due date")
+    tags: list[int] | None = Field(default=None, description="List of tag IDs")
+    recurring: RecurringCreate | None = None
+    reminders: list[ReminderCreate] = Field(default_factory=list)
 
 
 class TaskUpdate(BaseModel):
@@ -34,6 +40,7 @@ class TaskUpdate(BaseModel):
         status: New status
         priority: New priority
         due_date: New due date
+        tags: New list of tag IDs
     """
 
     title: str | None = Field(default=None, min_length=1, max_length=200, description="Task title")
@@ -44,6 +51,12 @@ class TaskUpdate(BaseModel):
     status: str | None = Field(default=None, description="Task status")
     priority: str | None = Field(default=None, description="Task priority")
     due_date: datetime | None = Field(default=None, description="Due date")
+    tags: list[int] | None = Field(default=None, description="List of tag IDs")
+    recurring: RecurringUpdate | None = None
+    reminders: list[ReminderCreate] | None = None
+
+
+from src.schemas.tag import TagResponse
 
 
 class TaskResponse(BaseModel):
@@ -60,6 +73,9 @@ class TaskResponse(BaseModel):
     status: str = Field(..., description="Task status")
     priority: str = Field(..., description="Task priority")
     due_date: datetime | None = Field(default=None, description="Due date")
+    tags: list[TagResponse] = Field(default=[], description="List of tags")
+    recurring_pattern: RecurringPattern | None = None
+    reminders: list[Reminder] = Field(default_factory=list, description="List of reminders")
     created_at: datetime = Field(..., description="Creation timestamp (UTC)")
     updated_at: datetime = Field(..., description="Last modification timestamp (UTC)")
 

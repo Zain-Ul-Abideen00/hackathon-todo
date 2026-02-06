@@ -1,19 +1,19 @@
 <!--
 SYNC IMPACT REPORT
-- Version change: 3.0.0 -> 4.0.0 (MAJOR: Kubernetes Deployment Extension)
+- Version change: 4.0.0 -> 5.0.0 (MAJOR: Phase 5 Cloud Deployment Extension)
 - Modified Principles:
-  - "Agentic Development" → EXPANDED (added K8s agents, Docker AI, kubectl-ai)
-  - "Project Structure" → EXPANDED (added k8s/ directory)
-  - "Tooling & Environment" → EXPANDED (added Docker, Helm, Minikube)
+  - "Agentic Development" → EXPANDED (added Dapr/Kafka agents and skills)
+  - "Project Structure" → EXPANDED (added cloud/, dapr/, notification-service/)
+  - "Tooling & Environment" → EXPANDED (added Dapr, Kafka, OCI CLI)
 - Added Principles:
-  - XVII. Docker Containerization (Production Images)
-  - XVIII. Helm Chart Architecture (Package Management)
-  - XIX. Kubernetes Deployment (Local K8s with Minikube)
-  - XX. Environment Configuration Strategy (ConfigMaps/Secrets)
+  - XXI. Event-Driven Architecture (Kafka pub/sub patterns)
+  - XXII. Dapr Building Blocks (Sidecar patterns)
+  - XXIII. CI/CD Pipeline (GitHub Actions)
+  - XXIV. Cloud Deployment (Oracle OKE)
 - Added Sections:
-  - Infrastructure/Deployment Stack
-  - Kubernetes Resource Specifications
-  - Minikube-Specific Configuration
+  - Advanced Task Features (tags, recurring, reminders)
+  - Cloud Infrastructure Stack
+  - CI/CD Workflows
 - Removed Sections: None
 - Templates requiring updates:
   ✅ plan-template.md - No changes required (generic structure)
@@ -21,7 +21,7 @@ SYNC IMPACT REPORT
   ✅ tasks-template.md - No changes required (generic structure)
 - Follow-up TODOs: None
 -->
-# Phase 4: Local Kubernetes Deployment Constitution
+# Phase 5: Advanced Features & Cloud Deployment Constitution
 
 ## Core Principles
 
@@ -206,12 +206,15 @@ Development tooling MUST be consistent across the team.
 - **Linting**: ESLint with Next.js config
 - **Formatting**: Prettier
 
-**Infrastructure** (NEW for Phase 4):
+**Infrastructure**:
 - **Container Runtime**: Docker Desktop or Docker Engine
-- **Kubernetes**: Minikube for local development
+- **Local Kubernetes**: Minikube for local development
+- **Cloud Kubernetes**: Oracle OKE (Always Free recommended)
 - **Package Manager**: Helm 3.x for Kubernetes package management
 - **kubectl**: Latest stable for K8s CLI operations
 - **kubectl-ai**: Optional for AI-assisted K8s operations
+- **Dapr CLI**: For Dapr component management (NEW for Phase 5)
+- **OCI CLI**: Oracle Cloud CLI for OKE management (NEW for Phase 5)
 
 **Rationale**: Consistent tooling eliminates "works on my machine" issues and ensures reproducible builds.
 
@@ -228,10 +231,12 @@ Development MUST leverage specialized AI agents and MCP servers.
 - `@database-architect`: Conversation persistence schema (threads, items)
 - `@nextjs-developer`: ChatKit frontend integration, useChatKit hook
 - `@ui-designer`: Chat UI styling and premium visual aesthetics
-- `@docker-expert`: Production Dockerfile creation and optimization (NEW)
-- `@kubernetes-architect`: Helm chart design and K8s architecture (NEW)
-- `@kubernetes-specialist`: Deployment operations and debugging (NEW)
-- `@deployment-engineer`: CI/CD patterns and deployment strategies (NEW)
+- `@docker-expert`: Production Dockerfile creation and optimization
+- `@kubernetes-architect`: Helm chart design and K8s architecture
+- `@kubernetes-specialist`: Deployment operations and debugging
+- `@deployment-engineer`: CI/CD patterns and deployment strategies
+- `@event-driven-architect`: Kafka/Dapr event design (NEW for Phase 5)
+- `@devops-engineer`: GitHub Actions and GitOps workflows (NEW for Phase 5)
 
 **Skills** (reference in specifications and plans):
 - `integrating-chatkit`: ChatKit patterns for frontend and backend
@@ -241,10 +246,15 @@ Development MUST leverage specialized AI agents and MCP servers.
 - `configuring-better-auth`: Auth implementation patterns and JWT flow
 - `building-nextjs-apps`: Next.js 16 patterns, async params, Server Actions
 - `lightswind-ui`: Premium component design patterns
-- `production-dockerfile`: Optimized Docker images with multi-stage builds (NEW)
-- `helm-chart-scaffolding`: Helm chart patterns and best practices (NEW)
-- `k8s-manifest-generator`: Kubernetes resource generation (NEW)
-- `k8s-security-policies`: Security policies for K8s deployments (NEW)
+- `production-dockerfile`: Optimized Docker images with multi-stage builds
+- `helm-chart-scaffolding`: Helm chart patterns and best practices
+- `k8s-manifest-generator`: Kubernetes resource generation
+- `k8s-security-policies`: Security policies for K8s deployments
+- `building-with-dapr`: Dapr building blocks and sidecar patterns (NEW for Phase 5)
+- `building-with-kafka-strimzi`: Event-driven Kafka patterns (NEW for Phase 5)
+- `building-with-multi-cloud`: Cloud K8s setup (OKE, AKS, DOKS) (NEW for Phase 5)
+- `github-actions-templates`: CI/CD workflow patterns (NEW for Phase 5)
+- `gitops-workflow`: ArgoCD/Flux declarative deployment (NEW for Phase 5)
 
 **MCP Servers** (use for tooling and diagnostics):
 - `better-auth`: Guided Better Auth configuration and troubleshooting
@@ -252,7 +262,7 @@ Development MUST leverage specialized AI agents and MCP servers.
 - `playwright`: E2E browser testing and automation
 - `neon`: Database operations and connection management
 
-**AIOps Tools** (Optional for Phase 4):
+**AIOps Tools**:
 - `kubectl-ai`: Natural language K8s commands
 - Docker AI (Gordon): `docker ai "query"` for container assistance
 
@@ -566,6 +576,145 @@ stringData:
 
 ---
 
+### XXI. Event-Driven Architecture
+
+The application MUST use event-driven patterns for async operations and service communication.
+
+**Event Patterns**:
+- **Pub/Sub**: Use publish/subscribe for decoupled service communication
+- **CloudEvents**: All events MUST follow CloudEvents specification format
+- **Async Processing**: Long-running operations MUST be event-driven (reminders, recurring tasks)
+- **Idempotency**: Event handlers MUST be idempotent to handle retries safely
+
+**Event Types**:
+
+| Event | Publisher | Subscribers | Purpose |
+|-------|-----------|-------------|---------|
+| `TaskCreated` | Backend | Notification Service | Trigger onboarding flows |
+| `TaskCompleted` | Backend | Analytics, Gamification | Track progress |
+| `TaskDueReminder` | Scheduler | Notification Service | Send due date reminders |
+| `RecurringTaskTrigger` | Dapr Jobs | Backend | Generate recurring instances |
+
+**Kafka Configuration**:
+- **Topics**: `task-events`, `reminder-events`, `recurring-events`
+- **Partitions**: Partition by `user_id` for ordering guarantees
+- **Retention**: 7 days for event replay capability
+
+**Rationale**: Event-driven architecture enables loose coupling, scalability, and resilient async processing.
+
+---
+
+### XXII. Dapr Building Blocks
+
+Dapr MUST be used for infrastructure abstraction in cloud-native deployments.
+
+**Required Building Blocks**:
+
+| Block | Component | Purpose |
+|-------|-----------|---------|
+| **Pub/Sub** | `pubsub.kafka` | Event streaming via Strimzi Kafka |
+| **State Store** | `state.postgresql` | Distributed state management |
+| **Secrets Store** | `secretstores.kubernetes` | Secure credential access |
+| **Jobs API** | Dapr Scheduler | Scheduled task execution |
+
+**Sidecar Pattern**:
+- All services MUST use Dapr sidecar injection via annotations
+- Application code MUST NOT directly access infrastructure (Kafka, Redis, etc.)
+- Use Dapr SDK (`dapr-client`) for Python integration
+
+**Pod Annotations**:
+```yaml
+annotations:
+  dapr.io/enabled: "true"
+  dapr.io/app-id: "backend"
+  dapr.io/app-port: "8000"
+```
+
+**Component Locations**:
+- Shared components: `todo-web-app/dapr/` (applies to local + cloud)
+- Cloud-specific: `todo-web-app/k8s/cloud/dapr/`
+
+**Rationale**: Dapr abstracts infrastructure, enabling portable, vendor-agnostic cloud-native applications.
+
+---
+
+### XXIII. CI/CD Pipeline
+
+Continuous Integration and Deployment MUST use GitHub Actions with proper gates.
+
+**Pipeline Stages**:
+
+| Stage | Trigger | Actions |
+|-------|---------|---------|
+| **Test** | PR to main/develop | Lint, type-check, unit tests, integration tests |
+| **Build** | Push to main | Build Docker images, push to registry |
+| **Deploy Staging** | Build success | Auto-deploy to staging environment |
+| **Deploy Production** | Manual approval | Deploy to production with approval gate |
+
+**Workflow Files** (at `hackathon-todo/.github/workflows/`):
+- `test.yml`: PR validation (lint, tests)
+- `build.yml`: Docker build and push
+- `deploy-staging.yml`: Automatic staging deployment
+- `deploy-production.yml`: Production with approval
+
+**Container Registry**:
+- **Primary**: GitHub Container Registry (`ghcr.io`)
+- **Tagging**: `ghcr.io/{owner}/{repo}/{service}:{sha}`
+
+**Security Requirements**:
+- Secrets MUST be stored in GitHub Secrets
+- Use OIDC for cloud authentication where supported
+- Scan images for vulnerabilities before push
+
+**Rationale**: Automated CI/CD ensures consistent, tested deployments and reduces human error.
+
+---
+
+### XXIV. Cloud Deployment
+
+Production deployment MUST target managed Kubernetes with Oracle OKE as the primary provider.
+
+**Cloud Provider Selection**:
+
+| Provider | Tier | Resources | Best For |
+|----------|------|-----------|----------|
+| **Oracle OKE** | Always Free | 4 OCPUs, 24GB RAM, 200GB | **RECOMMENDED** - Permanent free tier |
+| DigitalOcean DOKS | $200 credit | Trial (60 days) | Simple setup |
+| Azure AKS | $200 credit | Trial (30 days) | Enterprise features |
+
+**Oracle OKE Configuration**:
+- **Cluster Type**: Basic (free control plane)
+- **Node Shape**: `VM.Standard.A1.Flex` (ARM - Always Free)
+- **Node Pool**: 2 nodes × 2 OCPUs × 12 GB RAM
+- **Kubernetes Version**: v1.30.x
+
+**Directory Structure**:
+```text
+todo-web-app/
+├── k8s/
+│   ├── local/              # Phase 4 Minikube (complete)
+│   └── cloud/              # Phase 5 Cloud Kubernetes
+│       ├── backend/
+│       ├── frontend/
+│       ├── notification/
+│       ├── dapr/
+│       ├── kafka/
+│       ├── oke/            # Oracle OKE-specific
+│       └── values-cloud.yaml
+├── dapr/                   # Shared Dapr components
+└── notification-service/   # Kafka consumer
+```
+
+**Requirements**:
+- All deployments MUST have resource limits
+- Use Horizontal Pod Autoscaler for production
+- Configure Ingress with TLS (cert-manager)
+- Enable observability (Prometheus, Grafana)
+
+**Rationale**: Oracle OKE provides permanently free resources for learning and production experimentation.
+
+---
+
 ## Technology Stack
 
 ### Frontend (Next.js 16+)
@@ -604,11 +753,16 @@ stringData:
 - **Backend**: JWT verification middleware
 - **Algorithm**: HS256 with shared secret
 
-### Infrastructure/Deployment (NEW for Phase 4)
+### Infrastructure/Deployment
 - **Containerization**: Docker with multi-stage builds
-- **Orchestration**: Kubernetes (Minikube for local)
+- **Local K8s**: Minikube (Phase 4 - Complete)
+- **Cloud K8s**: Oracle OKE Always Free (Phase 5 - Recommended)
 - **Package Management**: Helm 3.x
 - **Base Images**: python:3.12-slim, node:20-alpine
+- **Event Streaming**: Strimzi Kafka on Kubernetes (NEW for Phase 5)
+- **Infrastructure Abstraction**: Dapr sidecar pattern (NEW for Phase 5)
+- **CI/CD**: GitHub Actions (NEW for Phase 5)
+- **Cloud CLI**: OCI CLI for Oracle Cloud (NEW for Phase 5)
 - **AIOps**: kubectl-ai (optional), Docker AI (optional)
 
 ---
@@ -668,8 +822,34 @@ todo-web-app/
     │   │       ├── service.yaml
     │   │       └── configmap.yaml
     │   └── values-local.yaml  # Minikube-specific overrides
-    └── cloud/               # Phase 5: DOKS (DigitalOcean Kubernetes)
-        └── ...              # Cloud-specific configs (Phase 5)
+    ├── cloud/                   # Phase 5: Cloud Kubernetes
+    │   ├── backend/             # Backend Helm chart (cloud values)
+    │   ├── frontend/            # Frontend Helm chart (cloud values)
+    │   ├── notification/        # Notification service Helm chart
+    │   ├── dapr/                # Dapr component configs
+    │   ├── kafka/               # Strimzi Kafka configs
+    │   ├── oke/                 # Oracle OKE-specific
+    │   └── values-cloud.yaml    # Cloud environment values
+    └── README.md                # K8s deployment documentation
+│
+├── dapr/                    # Dapr Components (shared)
+│   ├── pubsub.yaml          # Kafka PubSub component
+│   ├── statestore.yaml      # PostgreSQL state store
+│   ├── secretstore.yaml     # Kubernetes secrets component
+│   └── scheduler.yaml       # Dapr Jobs API for reminders
+│
+└── notification-service/    # Phase 5: Kafka Consumer
+    ├── src/
+    ├── Dockerfile
+    └── pyproject.toml
+
+hackathon-todo/              # Repository root
+└── .github/
+    └── workflows/
+        ├── test.yml         # PR validation
+        ├── build.yml        # Docker build & push
+        ├── deploy-staging.yml
+        └── deploy-production.yml
 ```
 
 ---
@@ -824,17 +1004,29 @@ This constitution supersedes all other development practices for Phase 4. All PR
 - [x] Tests with 80% coverage
 - [x] Demo video (under 90 seconds)
 
-### Phase 4 (NEW)
-- [ ] Production Dockerfile for backend (multi-stage)
-- [ ] Production Dockerfile for frontend (multi-stage)
-- [ ] Helm chart for backend with templates
-- [ ] Helm chart for frontend with templates
-- [ ] Minikube deployment working
-- [ ] Frontend accessible via browser
-- [ ] Chatbot functional in K8s environment
-- [ ] README with deployment instructions
+### Phase 4 (COMPLETE)
+- [x] Production Dockerfile for backend (multi-stage)
+- [x] Production Dockerfile for frontend (multi-stage)
+- [x] Helm chart for backend with templates
+- [x] Helm chart for frontend with templates
+- [x] Minikube deployment working
+- [x] Frontend accessible via browser
+- [x] Chatbot functional in K8s environment
+- [x] README with deployment instructions
+- [x] Demo video (under 90 seconds)
+
+### Phase 5 (NEW)
+- [ ] Recurring tasks implementation
+- [ ] Due date reminders working
+- [ ] Tags/categories for task organization
+- [ ] Enhanced search and filter
+- [ ] Dapr pub/sub with Kafka (Strimzi)
+- [ ] Oracle OKE cluster provisioned
+- [ ] CI/CD pipeline running (GitHub Actions)
+- [ ] Monitoring dashboards configured
+- [ ] README with cloud deployment instructions
 - [ ] Demo video (under 90 seconds)
 
 ---
 
-**Version**: 4.0.0 | **Ratified**: 2025-12-31 | **Last Amended**: 2026-01-31
+**Version**: 5.0.0 | **Ratified**: 2025-12-31 | **Last Amended**: 2026-02-02

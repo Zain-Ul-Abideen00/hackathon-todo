@@ -17,7 +17,16 @@ export const taskSchema = z.object({
 		.nullable(),
 	status: z.enum(["todo", "in_progress", "completed"]),
 	priority: z.enum(["low", "medium", "high"]),
-	due_date: z.string().datetime().optional().nullable(),
+	due_date: z.string().optional().nullable(),
+	tags: z.array(z.number()).optional(),
+	recurring: z.object({
+		pattern: z.enum(["daily", "weekly", "monthly", "yearly"]),
+		interval: z.number().int().positive().default(1),
+		end_date: z.string().optional().nullable(),
+	}).optional().nullable(),
+    reminders: z.array(z.object({
+        remind_at: z.string()
+    })).optional(),
 });
 
 export type TaskFormData = z.infer<typeof taskSchema>;

@@ -6,10 +6,12 @@ and status filtering operations.
 
 from datetime import UTC, datetime
 
-from sqlmodel import select
+from sqlalchemy.orm import selectinload
+from sqlmodel import select, delete
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from src.models import Task, TaskCreate, TaskUpdate
+from src.models import Task, TaskCreate, TaskUpdate, Tag, RecurringPattern, Reminder, TaskTag
+from src.services.notification_service import create_notification
 
 
 def utc_now() -> datetime:
@@ -41,10 +43,53 @@ async def create_task(
         # Ensure due_date is offset-naive if present
         due_date=task_data.due_date.replace(tzinfo=None) if task_data.due_date else None,
     )
+
+    if task_data.tags:
+        # Fetch valid tags belonging to user
+        tag_statement = select(Tag).where(Tag.id.in_(task_data.tags), Tag.user_id == user_id)
+        tags = (await session.exec(tag_statement)).all()
+        task.tags = list(tags)
+
     session.add(task)
     await session.commit()
     await session.refresh(task)
-    return task
+
+    if task_data.recurring:
+        pattern = RecurringPattern(
+            task_id=task.id,
+            pattern=task_data.recurring.pattern,
+            interval=task_data.recurring.interval,
+            end_date=task_data.recurring.end_date.replace(tzinfo=None) if task_data.recurring.end_date else None,
+        )
+        session.add(pattern)
+        await session.commit()
+        await session.refresh(task) # Refresh to load relationship if accessed?
+
+    if task_data.reminders:
+        for rem_data in task_data.reminders:
+            reminder = Reminder(
+                task_id=task.id,
+                user_id=user_id,
+                remind_at=rem_data.remind_at.replace(tzinfo=None) if rem_data.remind_at else None,
+                triggered=False,
+            )
+            session.add(reminder)
+        await session.commit()
+        await session.refresh(task)
+
+    # Create success notification
+    await create_notification(
+        session=session,
+        user_id=user_id,
+        title="Task Created",
+        message=f"Task '{task.title}' created successfully.",
+        task_id=task.id,
+        type="success",
+        category="task",
+        link=f"/dashboard?taskId={task.id}"
+    )
+
+    return await get_task(session, task.id, user_id)
 
 
 async def get_task(
@@ -62,7 +107,7 @@ async def get_task(
     Returns:
         Task if found and owned by user, None otherwise.
     """
-    statement = select(Task).where(Task.id == task_id, Task.user_id == user_id)
+    statement = select(Task).where(Task.id == task_id, Task.user_id == user_id).options(selectinload(Task.tags), selectinload(Task.recurring_pattern), selectinload(Task.reminders))
     result = await session.exec(statement)
     return result.first()
 
@@ -98,17 +143,119 @@ async def update_task(
     if "due_date" in update_data and update_data["due_date"]:
         update_data["due_date"] = update_data["due_date"].replace(tzinfo=None)
 
+    # Capture previous state
+    was_completed = task.completed
+
     for key, value in update_data.items():
-        setattr(task, key, value)
+        if key == "tags" and value is not None:
+             # Handle tag updates
+             tag_statement = select(Tag).where(Tag.id.in_(value), Tag.user_id == user_id)
+             tags = (await session.exec(tag_statement)).all()
+             task.tags = list(tags)
+        elif key == "recurring":
+             # Handle recurring pattern updates
+             if value is None:
+                 # Explicit removal of recurring pattern
+                 if task.recurring_pattern:
+                     await session.delete(task.recurring_pattern)
+                     task.recurring_pattern = None
+             else:
+                 existing = task.recurring_pattern
+                 recur_data = task_update.recurring # value is dict if dump? No, model_dump makes dicts usually?
+                 # Wait, model_dump(exclude_unset=True) makes DICTS recursively by default?
+                 # Pydantic model_dump returns dicts.
+                 # But we are iterating update_data lines 149.
+                 # task_update is the object. update_data is the dict.
+                 # So 'value' is a dict, not RecurringUpdate object.
+                 # We should use the dict 'value' directly or re-access from task_update object if easier.
+                 # task_update.recurring is the object version.
+
+                 # Let's use the object from task_update if available, or parse the dict.
+                 # Simplest is using the object if 'value' corresponds to it.
+                 # If value is a dict, task_update.recurring might be the object or None if we used dump?
+                 # We have 'recur_data = task_update.recurring' in existing code.
+                 # If exclude_unset=True, task_update.recurring SHOULD be set.
+
+                 # Let's check existing code:
+                 # recur_data = task_update.recurring
+                 # if recur_data.pattern: existing.pattern = recur_data.pattern
+
+                 # NOTE: 'value' in the loop is the dict representation.
+                 # task_update.recurring is the verified Pydantic model.
+                 # We should use task_update.recurring for safe access.
+
+                 recur_data = task_update.recurring
+                 # Note: if value is None, recur_data is None. Handled above.
+
+                 if existing:
+                     if recur_data.pattern: existing.pattern = recur_data.pattern
+                     if recur_data.interval: existing.interval = recur_data.interval
+                     if recur_data.end_date: existing.end_date = recur_data.end_date.replace(tzinfo=None)
+                     session.add(existing)
+                 else:
+                     new_pattern = RecurringPattern(
+                        task_id=task.id,
+                        pattern=recur_data.pattern or "daily",
+                        interval=recur_data.interval or 1,
+                        end_date=recur_data.end_date.replace(tzinfo=None) if recur_data.end_date else None,
+                    )
+                     session.add(new_pattern)
+        elif key == "reminders" and value is not None:
+             # Handle reminders: replace all
+             stmt = select(Reminder).where(Reminder.task_id == task_id)
+             existing_reminders = (await session.exec(stmt)).all()
+             for rem in existing_reminders:
+                 await session.delete(rem)
+
+             for rem_data in value:
+                 # Extract remind_at safely from dict
+                 remind_at_val = rem_data.get("remind_at")
+                 reminder = Reminder(
+                    task_id=task.id,
+                    user_id=user_id,
+                    remind_at=remind_at_val.replace(tzinfo=None) if remind_at_val else None,
+                    triggered=False
+                )
+                 session.add(reminder)
+        elif key != "tags" and key != "recurring" and key != "reminders":
+             setattr(task, key, value)
 
     # Update timestamp
     task.updated_at = utc_now()
+
+    # Check if due_date was updated
+    if "due_date" in update_data and task.due_date:
+        now = utc_now()
+
+        # Always reset notification state on date change so background service re-evaluates
+        task.overdue_notified_at = None
+
+        if task.due_date > now:
+            # If moved to future, clean up existing stale notifications
+            from src.services.notification_service import delete_task_notifications
+            await delete_task_notifications(session, task_id, user_id)
+            await session.refresh(task)
+
+        # If moved to past/overdue:
+        # We do NOT notify here. We let the background overdue_service pick it up
+        # since we reset overdue_notified_at to None.
+
+    # Check if task was re-activated (status changed from completed -> active)
+    # If so, and it is past due, we must reset notified status so it gets picked up again
+    if "status" in update_data and update_data["status"] != "completed" and task.due_date:
+         if task.due_date < utc_now():
+             task.overdue_notified_at = None
 
     session.add(task)
     await session.commit()
     await session.refresh(task)
 
-    return task
+    # Trigger recurrence if completed
+    if not was_completed and task.completed:
+        from src.services.recurring_service import process_task_completion
+        await process_task_completion(session, task)
+
+    return await get_task(session, task.id, user_id)
 
 
 async def delete_task(
@@ -130,6 +277,11 @@ async def delete_task(
     if not task:
         return False
 
+    # Explicitly delete many-to-many associations to avoid FK errors
+    # (SQLAlchemy cascade for m2m link_model works, but explicit is safer here if DB is strict)
+    tag_stmt = delete(TaskTag).where(TaskTag.task_id == task_id)
+    await session.exec(tag_stmt)
+
     await session.delete(task)
     await session.commit()
     return True
@@ -150,7 +302,7 @@ async def list_tasks_by_user(
     Returns:
         List of tasks belonging to the user.
     """
-    statement = select(Task).where(Task.user_id == user_id)
+    statement = select(Task).where(Task.user_id == user_id).options(selectinload(Task.tags))
 
     if completed is not None:
         statement = statement.where(Task.completed == completed)
@@ -170,6 +322,7 @@ async def list_tasks_paginated(
     status_filter: str | None = None,
     priority_filter: str | None = None,
     search: str | None = None,
+    tag_ids: list[int] | None = None,
 ) -> dict:
     """List tasks with cursor-based pagination and sorting.
 
@@ -184,17 +337,28 @@ async def list_tasks_paginated(
         status_filter: Filter by specific status (todo, in_progress, completed, overdue).
         priority_filter: Filter by priority (low, medium, high).
         search: Search query for title/description.
+        tag_ids: Filter by list of tag IDs.
     """
     import base64
     from sqlalchemy import func
 
-    statement = select(Task).where(Task.user_id == user_id)
+    statement = select(Task).where(Task.user_id == user_id).options(selectinload(Task.tags), selectinload(Task.recurring_pattern), selectinload(Task.reminders))
+
+    # Apply tag filter
+    if tag_ids:
+        statement = statement.where(Task.tags.any(Tag.id.in_(tag_ids)))
 
     # Apply search
     if search:
+        # Join with Tag to search by tag name
+        statement = statement.join(Task.tags, isouter=True)
         statement = statement.where(
-            (Task.title.ilike(f"%{search}%")) | (Task.description.ilike(f"%{search}%"))
+            (Task.title.ilike(f"%{search}%"))
+            | (Task.description.ilike(f"%{search}%"))
+            | (Tag.name.ilike(f"%{search}%"))
         )
+        # Ensure we don't get duplicate tasks if multiple tags match
+        statement = statement.distinct()
 
     # 1. Handle "overdue" special case first
     if status_filter == "overdue":
@@ -360,6 +524,7 @@ async def toggle_task_completion(
     if not task:
         return None
 
+    was_completed = task.completed
     task.completed = not task.completed
     # Sync status with completed state
     if task.completed:
@@ -372,4 +537,40 @@ async def toggle_task_completion(
     session.add(task)
     await session.commit()
     await session.refresh(task)
-    return task
+
+    # Notification
+    is_completed = task.completed
+
+    # Notification
+    msg = "Task completed! Great job!" if is_completed else "Task un-completed."
+
+    # If completed, cleanup overdue/reminder notifications
+    if is_completed:
+        from src.services.notification_service import delete_task_notifications
+        await delete_task_notifications(session, task_id, user_id)
+    else:
+        # Un-completing: Check if it's already overdue, if so, reset notified flag so it triggers again
+        if task.due_date and task.due_date < utc_now():
+             task.overdue_notified_at = None
+
+    await create_notification(
+        session=session,
+        user_id=user_id,
+        title="Task Update",
+        message=msg,
+        task_id=task_id,
+        type="success" if is_completed else "info",
+        category="task",
+        link=f"/dashboard?taskId={task_id}"
+    )
+
+    # Trigger recurrence if completed
+    # Refresh task ensures attributes are loaded (create_notification or delete might have committed)
+    await session.refresh(task)
+
+    if not was_completed and is_completed:
+        from src.services.recurring_service import process_task_completion
+        await process_task_completion(session, task)
+
+    # Use task_id directly to avoid MissingGreenlet on expired task object
+    return await get_task(session, task_id, user_id)
