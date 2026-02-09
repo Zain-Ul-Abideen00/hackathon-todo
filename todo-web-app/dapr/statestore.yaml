@@ -1,0 +1,27 @@
+# Dapr State Store Component
+
+# Configuration for PostgreSQL state store via Dapr
+# Per SDD Use Case 2 - Conversation state storage
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: statestore
+  namespace: todo-app
+spec:
+  type: state.postgresql
+  version: v1
+  metadata:
+    - name: connectionString
+      secretKeyRef:
+        name: backend-secrets
+        key: DATABASE_URL
+    - name: tableName
+      value: "dapr_state"
+    - name: keyPrefix
+      value: "name"  # Use component name as prefix
+    - name: actorStateStore
+      value: "false"
+scopes:
+  - backend
+  - notification-service
+  - recurring-service

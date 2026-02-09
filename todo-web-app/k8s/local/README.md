@@ -218,6 +218,10 @@ This step is **critical** - it configures Docker to build images directly inside
 
 # Verify (should show minikube containers)
 docker ps
+
+# Verify you're in Minikube's Docker (should show minikube)
+docker info | Select-String "Name:"
+
 ```
 
 > ⚠️ **Important**: Run this command in every new terminal session before building images!

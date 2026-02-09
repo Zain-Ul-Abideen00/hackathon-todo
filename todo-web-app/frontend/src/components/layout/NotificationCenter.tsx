@@ -10,6 +10,7 @@ import { useNotificationStore } from "@/stores/notificationStore";
 import { formatDistanceToNow } from "date-fns";
 import { createNotification } from "@/lib/api/notifications";
 import { toast } from "sonner"; // Use toast to sync
+import { useWebSocket } from "@/hooks/useWebSocket";
 
 export function NotificationCenter() {
     const [open, setOpen] = useState(false);
@@ -24,11 +25,18 @@ export function NotificationCenter() {
         addNotification // Exposed for manual test creation
     } = useNotificationStore();
 
-    // Initial fetch and faster polling (15s)
+    // WebSocket for real-time updates
+    useWebSocket({
+        onTaskUpdate: (data) => {
+            // When task update comes via WebSocket, refresh notifications
+            fetchNotifications(false);
+        },
+    });
+
+    // Initial fetch only - WebSocket handles all real-time updates
     useEffect(() => {
         fetchNotifications(false);
-        const interval = setInterval(() => fetchNotifications(false), 15000);
-        return () => clearInterval(interval);
+        // No polling - WebSocket provides real-time updates
     }, [fetchNotifications]);
 
     // State to track last seen notification ID for toasts

@@ -1,0 +1,18 @@
+# Dapr Scheduled Job Component
+
+# Configuration for reminder check job
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: reminder-scheduler
+  namespace: todo-app
+spec:
+  type: bindings.cron
+  version: v1
+  metadata:
+    - name: schedule
+      value: "@every 15m"
+    - name: direction
+      value: "input"
+scopes:
+  - backend

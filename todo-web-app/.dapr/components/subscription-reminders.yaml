@@ -1,0 +1,12 @@
+# Local Subscription - Reminders
+# Routes reminder-events topic to notification-service handler
+apiVersion: dapr.io/v1alpha1
+kind: Subscription
+metadata:
+  name: reminders-local
+spec:
+  topic: reminder-events
+  route: /api/reminders/handle
+  pubsubname: taskpubsub
+scopes:
+  - notification-service

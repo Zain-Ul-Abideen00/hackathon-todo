@@ -1,0 +1,16 @@
+# Dapr Subscription: Audit Events
+
+# Declarative subscription for audit-service
+# For complete activity history (SDD Use Case 3)
+apiVersion: dapr.io/v2alpha1
+kind: Subscription
+metadata:
+  name: audit-subscription
+  namespace: todo-app
+spec:
+  pubsubname: taskpubsub
+  topic: task-events
+  routes:
+    default: /api/audit/log
+scopes:
+  - audit-service

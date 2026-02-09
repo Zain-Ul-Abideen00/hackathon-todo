@@ -34,23 +34,29 @@ resources:
 probes:
   liveness:
     path: /
-    initialDelaySeconds: 10
+    initialDelaySeconds: 15
     periodSeconds: 10
     failureThreshold: 3
   readiness:
     path: /
     initialDelaySeconds: 10
-    periodSeconds: 10
+    periodSeconds: 5
     failureThreshold: 3
 
 # ConfigMap values (non-sensitive, NEXT_PUBLIC_* vars)
 config:
+  # Backend API URL (internal K8s service)
   apiUrl: "http://todo-backend:8000"
+  # ChatKit URL for AI chat
   chatkitUrl: "http://todo-backend:8000/api/chat"
+  # Better Auth URL (use external access URL for auth callbacks)
   betterAuthUrl: "http://localhost:3000"
+  # ChatKit domain key
   chatkitDomainKey: "localhost"
+  # WebSocket service URL for real-time notifications (Dapr pub/sub)
+  websocketUrl: "ws://todo-websocket-service:8004/ws"
 
-# Secret values (sensitive - pass via --set or external secrets)
+# Secret values (pass via --set from .env, never commit actual values!)
 secrets:
   databaseUrl: ""
   betterAuthSecret: ""

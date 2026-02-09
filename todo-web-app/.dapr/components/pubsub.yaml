@@ -1,0 +1,14 @@
+# Redis Pub/Sub Component (for local development)
+# Uses Redis from 'dapr init' for cross-service pub/sub
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: taskpubsub
+spec:
+  type: pubsub.redis
+  version: v1
+  metadata:
+    - name: redisHost
+      value: localhost:6379
+    - name: redisPassword
+      value: ""

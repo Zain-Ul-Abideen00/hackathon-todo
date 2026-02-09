@@ -66,6 +66,36 @@ A full-stack **AI-powered task management application** built with **Next.js 16*
     └───────────┘
 ```
 
+### 🔄 Event-Driven Architecture (Dapr)
+
+The application uses Dapr for event-driven microservices:
+
+```
+┌─────────────────┐    publish     ┌───────────────┐
+│     Backend     │ ─────────────▶ │   taskpubsub  │
+│   (port 8000)   │                │  (Redis/Kafka)│
+└─────────────────┘                └───────┬───────┘
+                                           │ subscribe
+        ┌──────────────────────────────────┼──────────────────────────────────┐
+        │                    │             │             │                    │
+        ▼                    ▼             ▼             ▼                    ▼
+┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐
+│ Notification  │  │  Recurring    │  │    Audit      │  │  WebSocket    │
+│   (8001)      │  │   (8002)      │  │   (8003)      │  │   (8004)      │
+│  Reminders    │  │  Next tasks   │  │  Activity log │  │  Real-time    │
+└───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘
+```
+
+**Microservices:**
+| Service | Port | Purpose |
+|---------|------|---------|
+| Backend | 8000 | Main API, publishes events |
+| Notification | 8001 | Sends reminders |
+| Recurring | 8002 | Creates next recurring task |
+| Audit | 8003 | Logs all activity |
+| WebSocket | 8004 | Real-time UI updates |
+
+
 ---
 
 ## 🚀 Quick Start

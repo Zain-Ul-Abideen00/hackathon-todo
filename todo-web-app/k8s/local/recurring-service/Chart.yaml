@@ -1,0 +1,6 @@
+apiVersion: v2
+name: recurring-service
+description: Recurring task processor service Helm chart for Dapr pub/sub consumer
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

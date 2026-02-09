@@ -13,6 +13,14 @@ spec:
     metadata:
       labels:
         {{- include "todo-backend.selectorLabels" . | nindent 8 }}
+      {{- if .Values.dapr.enabled }}
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "backend"
+        dapr.io/app-port: "{{ .Values.service.targetPort }}"
+        dapr.io/enable-api-logging: "true"
+        dapr.io/log-level: "info"
+      {{- end }}
     spec:
       containers:
         - name: {{ .Chart.Name }}

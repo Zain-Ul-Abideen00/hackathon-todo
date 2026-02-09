@@ -165,7 +165,39 @@ All task endpoints require the `user_id` in the URL path. Rate limited to 100 re
 | GET | `/api/chat/threads/{id}` | Get thread with messages |
 | DELETE | `/api/chat/threads/{id}` | Delete a thread |
 
----
+### Dapr Integration (Phase 5)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/jobs/trigger` | Dapr Jobs API callback for scheduled tasks |
+| GET | `/api/jobs/health` | Scheduler health check |
+
+#### Jobs API Scheduling
+
+The backend integrates with Dapr's Jobs API for scheduled operations:
+
+```bash
+# Manual trigger for reminder check
+curl -X POST http://localhost:8000/api/jobs/trigger \
+  -H "Content-Type: application/json" \
+  -d '{"job_name": "reminder-check", "scheduled_time": "2024-01-01T12:00:00Z"}'
+```
+
+Supported job names:
+- `reminder-check`: Processes due reminders and publishes events to Kafka
+
+#### Dapr Secrets Store
+
+Secrets can be retrieved via Dapr's secrets API instead of environment variables:
+
+```python
+from src.core.secrets import get_secret
+
+# Retrieve secret (with env var fallback for local dev)
+db_url = await get_secret("database-url", default=os.getenv("DATABASE_URL"))
+```
+
+Set `DAPR_SECRETS_ENABLED=true` to use Dapr secrets in Kubernetes.
 
 ## 🤖 AI Chatbot Module
 

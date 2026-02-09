@@ -1,0 +1,42 @@
+# Recurring Service Helm Chart Values
+
+replicaCount: 1
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: todo-recurring-service
+  tag: "latest"
+  pullPolicy: Never  # Use Never for Minikube local images
+
+service:
+  type: ClusterIP
+  port: 8002
+  targetPort: 8002
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "50m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
+
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    failureThreshold: 3
+  readiness:
+    path: /health
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 3
+
+# Dapr sidecar configuration
+dapr:
+  enabled: true  # Required for pub/sub subscription
+  appId: "recurring-service"
+  appPort: 8002

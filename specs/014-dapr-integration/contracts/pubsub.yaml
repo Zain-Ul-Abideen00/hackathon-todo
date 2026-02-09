@@ -1,0 +1,34 @@
+# Dapr Pub/Sub Component
+
+# Configuration for Kafka pub/sub via Dapr
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: taskpubsub
+  namespace: todo-app
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+    - name: brokers
+      value: "kafka-cluster-kafka-bootstrap.kafka:9092"
+    - name: authType
+      value: "none"
+    - name: consumerGroup
+      value: "todo-app-services"
+    - name: initialOffset
+      value: "oldest"  # Ensures new consumers get missed messages
+    - name: disableTls
+      value: "true"
+    - name: version
+      value: "3.0.0"
+    - name: maxMessageBytes
+      value: "1048576"
+    - name: clientID
+      value: "todo-app"
+scopes:
+  - backend
+  - notification-service
+  - recurring-service
+  - websocket-service
+  - audit-service
