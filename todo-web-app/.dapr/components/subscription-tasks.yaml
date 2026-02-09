@@ -1,0 +1,12 @@
+# Local Subscription - Task Events
+# Routes task-events topic to notification-service handler
+apiVersion: dapr.io/v1alpha1
+kind: Subscription
+metadata:
+  name: task-events-local
+spec:
+  topic: task-events
+  route: /api/tasks/handle
+  pubsubname: taskpubsub
+scopes:
+  - notification-service

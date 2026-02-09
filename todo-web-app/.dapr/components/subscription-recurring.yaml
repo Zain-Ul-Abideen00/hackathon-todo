@@ -1,0 +1,12 @@
+# Subscription for recurring-service to receive task-events
+apiVersion: dapr.io/v2alpha1
+kind: Subscription
+metadata:
+  name: recurring-task-events
+spec:
+  topic: task-events
+  routes:
+    default: /api/tasks/handle
+  pubsubname: taskpubsub
+scopes:
+  - recurring-service

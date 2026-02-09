@@ -37,7 +37,28 @@ async def create_notification(
         await session.commit()
         await session.refresh(notification)
 
+        # Schedule WebSocket publish as background task to avoid MissingGreenlet error
+        # The httpx client in publisher can break SQLAlchemy's greenlet context if awaited inline
+        import asyncio
+        asyncio.create_task(_publish_notification_event(user_id, task_id))
+
     return notification
+
+
+async def _publish_notification_event(user_id: str, task_id: int | None) -> None:
+    """Background task to publish notification event for real-time delivery."""
+    try:
+        from src.events import get_publisher
+        publisher = await get_publisher()
+        await publisher.publish_task_updated(
+            task_id=task_id or 0,
+            user_id=user_id,
+            action="notification",
+        )
+    except Exception as e:
+        # Fire-and-forget: log but don't fail
+        import logging
+        logging.getLogger(__name__).warning("Failed to publish notification event: %s", e)
 
 async def list_notifications(
     session: AsyncSession,

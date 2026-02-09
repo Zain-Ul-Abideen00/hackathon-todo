@@ -9,3 +9,4 @@ data:
   NEXT_PUBLIC_CHATKIT_URL: {{ .Values.config.chatkitUrl | quote }}
   NEXT_PUBLIC_BETTER_AUTH_URL: {{ .Values.config.betterAuthUrl | quote }}
   NEXT_PUBLIC_CHATKIT_DOMAIN_KEY: {{ .Values.config.chatkitDomainKey | quote }}
+  NEXT_PUBLIC_WS_URL: {{ .Values.config.websocketUrl | quote }}

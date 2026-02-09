@@ -12,6 +12,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.models import Task, TaskCreate, TaskUpdate, Tag, RecurringPattern, Reminder, TaskTag
 from src.services.notification_service import create_notification
+from src.events import get_publisher
 
 
 def utc_now() -> datetime:
@@ -87,6 +88,22 @@ async def create_task(
         type="success",
         category="task",
         link=f"/dashboard?taskId={task.id}"
+    )
+
+    # Publish task created event (fire-and-forget)
+    publisher = await get_publisher()
+    await publisher.publish_task_created(
+        task_id=task.id,
+        user_id=user_id,
+        title=task.title,
+        due_date=task.due_date,
+        priority=task.priority,
+    )
+    # Also publish to task-updates for WebSocket real-time delivery
+    await publisher.publish_task_updated(
+        task_id=task.id,
+        user_id=user_id,
+        action="create",
     )
 
     return await get_task(session, task.id, user_id)
@@ -255,6 +272,14 @@ async def update_task(
         from src.services.recurring_service import process_task_completion
         await process_task_completion(session, task)
 
+    # Publish task update event for WebSocket real-time delivery
+    publisher = await get_publisher()
+    await publisher.publish_task_updated(
+        task_id=task.id,
+        user_id=user_id,
+        action="update",
+    )
+
     return await get_task(session, task.id, user_id)
 
 
@@ -282,8 +307,20 @@ async def delete_task(
     tag_stmt = delete(TaskTag).where(TaskTag.task_id == task_id)
     await session.exec(tag_stmt)
 
+    # Capture task info before deletion for event
+    task_title = task.title
+
     await session.delete(task)
     await session.commit()
+
+    # Publish task update event for deletion (fire-and-forget)
+    publisher = await get_publisher()
+    await publisher.publish_task_updated(
+        task_id=task_id,
+        user_id=user_id,
+        action="delete",
+    )
+
     return True
 
 
@@ -569,8 +606,25 @@ async def toggle_task_completion(
     await session.refresh(task)
 
     if not was_completed and is_completed:
+        # Save task title before recurrence processing (task object may expire after)
+        task_title = task.title
+
         from src.services.recurring_service import process_task_completion
         await process_task_completion(session, task)
+
+        # Publish task completed event (fire-and-forget)
+        publisher = await get_publisher()
+        await publisher.publish_task_completed(
+            task_id=task_id,
+            user_id=user_id,
+            title=task_title,  # Use saved title to avoid expired object access
+        )
+        # Also publish to task-updates for WebSocket real-time delivery
+        await publisher.publish_task_updated(
+            task_id=task_id,
+            user_id=user_id,
+            action="complete",
+        )
 
     # Use task_id directly to avoid MissingGreenlet on expired task object
     return await get_task(session, task_id, user_id)

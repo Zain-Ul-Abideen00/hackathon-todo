@@ -1,0 +1,22 @@
+# Dapr Pub/Sub Component - In-Memory (For Local Testing)
+#
+# This uses Dapr's in-memory pub/sub feature, which doesn't require
+# external infrastructure like Kafka. Perfect for local development/testing.
+#
+# For production, replace with pubsub.yaml (uses Kafka)
+#
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: taskpubsub
+  namespace: todo-app
+spec:
+  type: pubsub.in-memory
+  version: v1
+  metadata: []
+scopes:
+  - backend
+  - notification-service
+  - recurring-service
+  - websocket-service
+  - audit-service

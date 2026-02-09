@@ -1,0 +1,15 @@
+# Dapr Subscription: Reminders Topic
+
+# Declarative subscription for notification-service
+apiVersion: dapr.io/v2alpha1
+kind: Subscription
+metadata:
+  name: reminders-subscription
+  namespace: todo-app
+spec:
+  pubsubname: taskpubsub
+  topic: reminder-events
+  routes:
+    default: /api/reminders/handle
+scopes:
+  - notification-service

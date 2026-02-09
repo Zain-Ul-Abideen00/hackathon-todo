@@ -29,6 +29,7 @@ from src.api.routes import health
 from src.api.routes.tasks import router as tasks_router
 from src.api.routes.tags import router as tags_router
 from src.api.routes.notifications import router as notifications_router
+from src.api.routes.scheduler import router as scheduler_router
 from src.chat.routes import router as chat_router
 
 
@@ -91,7 +92,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             except Exception as e:
                 print(f"⚠️ Error in overdue loop: {e}")
 
-            await asyncio.sleep(60) # Check every minute
+            await asyncio.sleep(15)  # Check every 15 seconds for near real-time reminders
 
     # Store task reference to prevent garbage collection
     reminder_task = asyncio.create_task(reminder_loop())
@@ -185,6 +186,7 @@ app.include_router(tasks_router, prefix="/api", tags=["Tasks"])
 app.include_router(tags_router, prefix="/api", tags=["Tags"])
 app.include_router(notifications_router, prefix="/api", tags=["Notifications"])
 app.include_router(chat_router, prefix="/api", tags=["Chat"])
+app.include_router(scheduler_router, tags=["Scheduler"])
 
 
 @app.get("/")

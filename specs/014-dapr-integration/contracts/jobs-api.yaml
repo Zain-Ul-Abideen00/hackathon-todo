@@ -1,0 +1,43 @@
+Dapr Jobs API Component
+
+Scheduler for reminder jobs using Jobs API (not cron polling)
+Per SDD Use Case 4 - Exact timing, callback-based
+Ref: https://docs.dapr.io/developing-applications/building-blocks/jobs/
+
+Note: Jobs API is used programmatically via HTTP:
+POST http://localhost:3500/v1.0-alpha1/jobs/{jobName}
+{
+  "dueTime": "2026-02-07T15:00:00Z",
+  "data": { "task_id": 123, "user_id": "abc", "type": "reminder" }
+}
+
+The backend must expose a callback endpoint:
+POST /api/jobs/trigger - Dapr calls this at scheduled time
+
+No component YAML needed for Jobs API - it's built into Dapr runtime
+This file documents the API contract
+
+Callback Endpoint Contract:
+---
+POST /api/jobs/trigger
+Headers:
+  - Content-Type: application/json
+Body:
+  {
+    "name": "reminder-task-{task_id}",
+    "dueTime": "2026-02-07T15:00:00Z",
+    "data": {
+      "task_id": 123,
+      "user_id": "abc-def-123",
+      "type": "reminder"
+    }
+  }
+Response:
+  { "status": "SUCCESS" }
+
+Supported Job Properties:
+- dueTime: ISO 8601 timestamp (when to trigger)
+- ttl: Duration after which job expires (e.g., "1h")
+- repeats: Number of times to repeat (optional)
+- period: Duration between repeats (e.g., "15m")
+- data: Arbitrary JSON payload sent to callback

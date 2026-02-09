@@ -48,9 +48,13 @@ config:
   corsOrigins: "http://localhost:3000,http://127.0.0.1:3000,http://localhost:30300,http://127.0.0.1:30300,http://192.168.49.2:30300"
   environment: "development"
 
-# Secret values (sensitive - pass via --set or external secrets)
+# Secret values (pass via --set from .env, never commit actual values!)
 secrets:
   databaseUrl: ""
   betterAuthSecret: ""
   geminiApiKey: ""
   groqApiKey: ""
+
+# Dapr sidecar configuration
+dapr:
+  enabled: true

@@ -1,0 +1,41 @@
+# Dapr Configuration - Local Development
+# Dapr Configuration - Local Development (Slim Mode)
+# Disables actors completely to prevent placement service connection attempts
+# apiVersion: dapr.io/v1alpha1
+# kind: Configuration
+# metadata:
+#   name: localconfig
+# spec:
+#   # Completely disable the actor subsystem
+#   # This prevents ALL placement service connection attempts
+#   actors:
+#     actorIdleTimeout: "0s"
+#     actorScanInterval: "0s"
+#     drainOngoingCallTimeout: "0s"
+#     drainRebalancedActors: false
+#     reentrancy:
+#       enabled: false
+#     remindersStoragePartitions: 0
+#   # Reduce log noise
+#   logging:
+#     apiLogging:
+#       enabled: false
+#   # Disable tracing (no Zipkin)
+#   tracing:
+#     samplingRate: "0"
+
+# Disables actors to prevent placement service connection attempts
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: localconfig
+spec:
+  # Disable actors (not used in this project)
+  # This prevents the noisy "Failed to connect to placement" logs
+  features:
+    - name: Actor.Reentrancy
+      enabled: false
+  # Set log level to warn to reduce noise
+  logging:
+    apiLogging:
+      enabled: false
